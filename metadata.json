@@ -1,0 +1,7 @@
+{
+  "name": "KKM International Group",
+  "description": "A corporate portal for KKM International Group, showcasing core technologies, projects, and innovations in engineering a sustainable future.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
