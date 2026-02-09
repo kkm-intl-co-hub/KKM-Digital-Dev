@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { useLanguage } from '../LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,8 +13,10 @@ interface User {
     role: UserRole;
     department: string;
     status: 'Active' | 'Inactive';
-    password?: string; // In a real app, this would be a hash
-    passwordExpiresAt?: string; // ISO Date String
+    passwordHash: string;
+    salt: string;
+    requiresPasswordChange: boolean;
+    lastLogin?: string;
 }
 
 interface AuthState {
@@ -24,11 +25,25 @@ interface AuthState {
     error: string | null;
 }
 
-// --- DATA GENERATION UTILS ---
+// --- SECURITY UTILS ---
+
+const generateSalt = (): string => {
+    const array = new Uint8Array(16);
+    window.crypto.getRandomValues(array);
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
+};
+
+const hashPassword = async (password: string, salt: string): Promise<string> => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password + salt);
+    const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+};
 
 // Helper to generate email based on format: first_initial.lastname@kkm-intl.org
 const generateEmail = (fullName: string): string => {
-    const cleanName = fullName.replace(/^(Dr\.|Mr\.|Ms\.)\s+/i, '').trim(); // Remove titles
+    const cleanName = fullName.replace(/^(Dr\.|Mr\.|Ms\.)\s+/i, '').trim();
     const parts = cleanName.split(' ');
     if (parts.length < 2) return `${cleanName.toLowerCase()}@kkm-intl.org`;
     
@@ -37,26 +52,14 @@ const generateEmail = (fullName: string): string => {
     return `${firstInitial}.${lastName}@kkm-intl.org`;
 };
 
-// Helper to set expiration date (e.g., 90 days from now)
-const getFutureDate = (days: number): string => {
-    const date = new Date();
-    date.setDate(date.getDate() + days);
-    return date.toISOString();
-};
-
-const DEFAULT_PASSWORD = "KKM-Intl-2025";
-
-// Personnel List extracted from About Us & Translations
+// Initial Personnel Data
 const PERSONNEL_DATA = [
-    // Executive Leadership (Admins)
     { name: 'Gino Ayyoubian', role: 'Admin', dept: 'Executive Office' },
     { name: 'Reza Asakereh', role: 'Admin', dept: 'Technology & AI' },
     { name: 'Khosro Jarrahian', role: 'Admin', dept: 'Science & Sustainability' },
     { name: 'Farid Imani', role: 'Admin', dept: 'Investment' },
     { name: 'Pedram Abdarzadeh', role: 'Admin', dept: 'Finance' },
     { name: 'HeidarYarveicy', role: 'Admin', dept: 'Operations' },
-    
-    // Senior Management (Managers)
     { name: 'Salar Hashemi', role: 'Manager', dept: 'Energy Systems' },
     { name: 'Mahdi Ghiasy', role: 'Manager', dept: 'BIM & Digital Twin' },
     { name: 'Ashkan Tofangchiha', role: 'Manager', dept: 'QA/QC' },
@@ -65,76 +68,113 @@ const PERSONNEL_DATA = [
     { name: 'Masoumeh Moshar', role: 'Manager', dept: 'Public Relations' },
     { name: 'Hamed Zatajam', role: 'Manager', dept: 'Legal' },
     { name: 'Seyed Jasem Hosseini', role: 'Manager', dept: 'HSE' },
-    
-    // Specialized & Staff (Employees/Contributors)
     { name: 'Masoumeh Einabadi', role: 'Employee', dept: 'Biomedical R&D' },
     { name: 'Sina Ayyoubian', role: 'Employee', dept: 'R&D Innovation' },
     { name: 'Reza Baghdadchi', role: 'Reviewer', dept: 'Regulatory Affairs' },
 ];
 
-// Generate Mock Database
-const MOCK_USERS: User[] = PERSONNEL_DATA.map((person, index) => ({
-    id: (index + 1).toString(),
-    name: person.name,
-    email: generateEmail(person.name),
-    role: person.role as UserRole,
-    department: person.dept,
-    status: 'Active',
-    password: DEFAULT_PASSWORD,
-    passwordExpiresAt: getFutureDate(90) // Passwords expire in 90 days
-}));
-
 // --- LOGIN COMPONENT ---
-const LoginView: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => {
+interface LoginViewProps {
+    onLogin: (user: User) => void;
+    userDatabase: User[];
+    onUpdateUser: (updatedUser: User) => void;
+}
+
+const LoginView: React.FC<LoginViewProps> = ({ onLogin, userDatabase, onUpdateUser }) => {
     const { t } = useLanguage();
+    const [viewMode, setViewMode] = React.useState<'login' | 'setup'>('login');
     const [loading, setLoading] = React.useState(false);
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
+    const [newPassword, setNewPassword] = React.useState('');
+    const [confirmPassword, setConfirmPassword] = React.useState('');
     const [error, setError] = React.useState('');
+    const [pendingUser, setPendingUser] = React.useState<User | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    // Initial password from Env or fallback for the 'first login' simulation
+    const initialTempPassword = process.env.REACT_APP_INITIAL_PASSWORD || "KKM-Temp-2025";
+
+    const handleVerifyCredentials = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
-        
-        // Simulate Network Verification
-        setTimeout(() => {
-            const foundUser = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase().trim());
+
+        try {
+            const foundUser = userDatabase.find(u => u.email.toLowerCase() === email.toLowerCase().trim());
             
             if (!foundUser) {
-                setError(t('LoginFailed'));
-                setLoading(false);
-                return;
+                // Artificial delay to prevent timing attacks
+                await new Promise(r => setTimeout(r, 800));
+                throw new Error(t('LoginFailed'));
             }
 
-            // Check Password
-            if (foundUser.password !== password) {
-                setError(t('LoginFailed')); // Generic error for security
-                setLoading(false);
-                return;
-            }
-
-            // Check Password Expiration
-            if (foundUser.passwordExpiresAt) {
-                const now = new Date();
-                const expiry = new Date(foundUser.passwordExpiresAt);
-                if (now > expiry) {
-                    setError("Password has expired. Please contact IT to reset credentials.");
-                    setLoading(false);
-                    return;
-                }
-            }
-
-            // Check Status
             if (foundUser.status !== 'Active') {
-                setError("Account is inactive. Contact Administrator.");
-                setLoading(false);
-                return;
+                await new Promise(r => setTimeout(r, 800));
+                throw new Error("Account is inactive. Contact Administrator.");
             }
 
-            // Successful Login
-            onLogin(foundUser);
-        }, 1200);
+            const hash = await hashPassword(password, foundUser.salt);
+            
+            if (hash !== foundUser.passwordHash) {
+                await new Promise(r => setTimeout(r, 800));
+                throw new Error(t('LoginFailed'));
+            }
+
+            // Credentials Valid
+            if (foundUser.requiresPasswordChange) {
+                setPendingUser(foundUser);
+                setViewMode('setup');
+                setLoading(false);
+            } else {
+                onLogin(foundUser);
+            }
+
+        } catch (err: any) {
+            setError(err.message);
+            setLoading(false);
+        }
+    };
+
+    const handleSetNewPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!pendingUser) return;
+        
+        setError('');
+        
+        if (newPassword.length < 8) {
+            setError("Password must be at least 8 characters long.");
+            return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+            setError("Passwords do not match.");
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // Re-hash new password with existing salt (or generate new one for rotation)
+            const newHash = await hashPassword(newPassword, pendingUser.salt);
+            
+            const updatedUser: User = {
+                ...pendingUser,
+                passwordHash: newHash,
+                requiresPasswordChange: false,
+                lastLogin: new Date().toISOString()
+            };
+
+            onUpdateUser(updatedUser);
+            
+            // Auto login after update
+            setTimeout(() => {
+                onLogin(updatedUser);
+            }, 500);
+
+        } catch (err) {
+            setError("Failed to update password.");
+            setLoading(false);
+        }
     };
 
     return (
@@ -144,118 +184,142 @@ const LoginView: React.FC<{ onLogin: (user: User) => void }> = ({ onLogin }) => 
                 animate={{ opacity: 1, scale: 1 }}
                 className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-2xl max-w-md w-full border-t-4 border-primary relative overflow-hidden"
             >
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                    {/* Background Logo Decoration */}
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-40 w-40 text-primary" viewBox="0 0 200 240">
-                        <defs>
-                            <linearGradient id="portalBgGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="#002D56" />
-                                <stop offset="100%" stopColor="#00BFFF" />
-                            </linearGradient>
-                        </defs>
-                        <path
-                            d="M 100 175 C 60 175 30 145 30 110 C 30 80 50 40 85 10 C 95 20 100 35 90 55 C 60 70 55 90 55 110 C 55 135 75 155 100 155 C 125 155 145 135 145 110 C 145 90 135 75 125 50 C 145 40 165 30 170 60 C 175 90 160 135 140 155 C 130 165 115 175 100 175 Z"
-                            fill="url(#portalBgGrad)"
-                            fillRule="evenodd"
-                        />
-                    </svg>
-                </div>
-                
                 <div className="text-center mb-8 relative z-10">
-                    <div className="w-20 h-20 bg-primary/5 dark:bg-secondary/5 rounded-full flex items-center justify-center mx-auto mb-4 text-primary dark:text-secondary shadow-inner p-4">
-                        {/* Main Icon Logo */}
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" className="w-full h-full drop-shadow-md">
-                            <defs>
-                                <linearGradient id="portalLoginBlue" x1="0%" y1="100%" x2="100%" y2="0%">
-                                    <stop offset="0%" stopColor="#002D56" />
-                                    <stop offset="100%" stopColor="#00BFFF" />
-                                </linearGradient>
-                                <radialGradient id="portalLoginSun" cx="50%" cy="50%" r="50%">
-                                    <stop offset="0%" stopColor="#FFD700" />
-                                    <stop offset="100%" stopColor="#FF8C00" />
-                                </radialGradient>
-                            </defs>
-                            <g transform="translate(0, 10)">
-                                <circle cx="100" cy="110" r="38" fill="url(#portalLoginSun)"/>
-                                <path
-                                    d="M 100 175 C 60 175 30 145 30 110 C 30 80 50 40 85 10 C 95 20 100 35 90 55 C 60 70 55 90 55 110 C 55 135 75 155 100 155 C 125 155 145 135 145 110 C 145 90 135 75 125 50 C 145 40 165 30 170 60 C 175 90 160 135 140 155 C 130 165 115 175 100 175 Z"
-                                    fill="url(#portalLoginBlue)"
-                                    fillRule="evenodd"
-                                />
-                            </g>
+                    <div className="w-16 h-16 bg-primary/5 dark:bg-secondary/5 rounded-full flex items-center justify-center mx-auto mb-4 text-primary dark:text-secondary shadow-inner">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
                     </div>
-                    <h1 className="text-2xl font-display font-bold text-text-dark dark:text-white tracking-tight">{t('InternalPortalLoginTitle')}</h1>
-                    <p className="text-text-light dark:text-slate-400 mt-2 text-xs uppercase tracking-widest">{t('InternalPortalLoginSubtitle')}</p>
+                    <h1 className="text-2xl font-display font-bold text-text-dark dark:text-white tracking-tight">
+                        {viewMode === 'login' ? t('InternalPortalLoginTitle') : 'Security Setup'}
+                    </h1>
+                    <p className="text-text-light dark:text-slate-400 mt-2 text-xs uppercase tracking-widest">
+                        {viewMode === 'login' ? t('InternalPortalLoginSubtitle') : 'Create a new secure password'}
+                    </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
-                    <div>
-                        <label className="block text-sm font-bold text-text-dark dark:text-slate-300 mb-1">{t('EmployeeID')}</label>
-                        <input 
-                            type="email" 
-                            required 
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none dark:text-white transition-all text-text-dark" 
-                            placeholder="e.g. g.ayyoubian@kkm-intl.org"
-                        />
-                        <p className="text-[10px] text-text-light dark:text-slate-500 mt-1 ml-1">Format: f.lastname@kkm-intl.org</p>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-bold text-text-dark dark:text-slate-300 mb-1">{t('Password')}</label>
-                        <input 
-                            type="password" 
-                            required 
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none dark:text-white transition-all text-text-dark" 
-                            placeholder="••••••••"
-                        />
-                    </div>
-                    
-                    {error && (
-                        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg flex items-center gap-2">
-                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
-                             {error}
-                        </div>
-                    )}
+                <AnimatePresence mode="wait">
+                    {viewMode === 'login' ? (
+                        <motion.form 
+                            key="login-form"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            onSubmit={handleVerifyCredentials} 
+                            className="space-y-5 relative z-10"
+                        >
+                            <div>
+                                <label className="block text-sm font-bold text-text-dark dark:text-slate-300 mb-1">{t('EmployeeID')}</label>
+                                <input 
+                                    type="email" 
+                                    required 
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none dark:text-white transition-all text-text-dark" 
+                                    placeholder="user@kkm-intl.org"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-text-dark dark:text-slate-300 mb-1">{t('Password')}</label>
+                                <input 
+                                    type="password" 
+                                    required 
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none dark:text-white transition-all text-text-dark" 
+                                    placeholder="••••••••"
+                                />
+                            </div>
+                            
+                            {error && (
+                                <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg flex items-center gap-2 animate-pulse">
+                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                                     {error}
+                                </div>
+                            )}
 
-                    <button 
-                        type="submit" 
-                        disabled={loading}
-                        className="w-full py-3 bg-primary hover:bg-secondary text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
-                    >
-                        {loading ? (
-                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        ) : t('LoginButton')}
-                    </button>
-                    
-                    <div className="text-center mt-4">
-                        <p className="text-xs text-text-light dark:text-slate-500 mb-4">
-                            Authorized Personnel Only. Default Pass: <span className="font-mono">{DEFAULT_PASSWORD}</span>
-                        </p>
-                        
-                        <div className="border-t border-gray-200 dark:border-slate-700 pt-4">
-                            <p className="text-xs text-text-light dark:text-slate-400 mb-2">{t('EnterprisePortalDesc')}</p>
-                            <a 
-                                href="https://portal.kkm-intl.org" 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center text-sm font-bold text-accent-dark dark:text-accent-yellow hover:underline"
+                            <button 
+                                type="submit" 
+                                disabled={loading}
+                                className="w-full py-3 bg-primary hover:bg-secondary text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
                             >
-                                {t('AccessEnterprisePortal')}
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                            </a>
-                        </div>
-                    </div>
-                </form>
+                                {loading ? (
+                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                ) : t('LoginButton')}
+                            </button>
+                            
+                            <div className="text-center mt-4 border-t border-gray-200 dark:border-slate-700 pt-4">
+                                <p className="text-xs text-text-light dark:text-slate-500 mb-2">
+                                    Initial Setup? Use temporary credential provided by IT.
+                                    <br/><span className="font-mono text-xs opacity-50 select-all">({initialTempPassword})</span>
+                                </p>
+                            </div>
+                        </motion.form>
+                    ) : (
+                        <motion.form
+                            key="setup-form"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            onSubmit={handleSetNewPassword}
+                            className="space-y-5 relative z-10"
+                        >
+                            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg text-sm text-yellow-800 dark:text-yellow-200 mb-4">
+                                For your security, you must update your password before proceeding.
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-text-dark dark:text-slate-300 mb-1">New Password</label>
+                                <input 
+                                    type="password" 
+                                    required 
+                                    value={newPassword}
+                                    onChange={(e) => setNewUserPassword(e.target.value)}
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none dark:text-white transition-all text-text-dark" 
+                                    placeholder="Min 8 characters"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-text-dark dark:text-slate-300 mb-1">Confirm Password</label>
+                                <input 
+                                    type="password" 
+                                    required 
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none dark:text-white transition-all text-text-dark" 
+                                    placeholder="Re-enter password"
+                                />
+                            </div>
+
+                            {error && (
+                                <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg flex items-center gap-2">
+                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                                     {error}
+                                </div>
+                            )}
+
+                            <button 
+                                type="submit" 
+                                disabled={loading}
+                                className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-70 flex justify-center items-center"
+                            >
+                                {loading ? 'Updating...' : 'Update & Login'}
+                            </button>
+                        </motion.form>
+                    )}
+                </AnimatePresence>
             </motion.div>
         </div>
     );
+
+    // Wrapper for setting password state to allow validation logic inside render if needed
+    function setNewUserPassword(val: string) {
+        setNewPassword(val);
+        // Real-time strength check could go here
+    }
 };
 
 // --- WIDGETS ---
@@ -299,30 +363,21 @@ const DeskIcon: React.FC<{ icon: React.ReactNode; label: string }> = ({ icon, la
 );
 
 // --- USER MANAGEMENT (ADMIN) ---
-const UserManagementView: React.FC = () => {
+interface UserManagementProps {
+    users: User[];
+    onCreateUser: (newUser: Partial<User>) => void;
+}
+
+const UserManagementView: React.FC<UserManagementProps> = ({ users, onCreateUser }) => {
     const { t } = useLanguage();
-    const [users, setUsers] = React.useState<User[]>(MOCK_USERS);
     const [isModalOpen, setIsModalOpen] = React.useState(false);
-    
-    // Form State
     const [newUser, setNewUser] = React.useState<Partial<User>>({ role: 'Employee', status: 'Active' });
     const [successMsg, setSuccessMsg] = React.useState('');
 
     const handleCreateUser = (e: React.FormEvent) => {
         e.preventDefault();
-        if (newUser.name && newUser.email) {
-            const id = (users.length + 1).toString();
-            // In a real app, logic to auto-generate email from name would go here if email wasn't provided
-            const finalEmail = newUser.email.includes('@') ? newUser.email : generateEmail(newUser.name);
-            
-            setUsers([...users, { 
-                ...newUser, 
-                id, 
-                email: finalEmail,
-                password: DEFAULT_PASSWORD,
-                passwordExpiresAt: getFutureDate(90)
-            } as User]);
-            
+        if (newUser.name) {
+            onCreateUser(newUser);
             setNewUser({ role: 'Employee', status: 'Active', name: '', email: '', department: '' });
             setSuccessMsg(t('Msg_UserCreated'));
             setTimeout(() => {
@@ -358,7 +413,6 @@ const UserManagementView: React.FC = () => {
                                 <th className="p-4 text-xs font-bold text-text-light dark:text-slate-400 uppercase tracking-wider">{t('Tbl_Role')}</th>
                                 <th className="p-4 text-xs font-bold text-text-light dark:text-slate-400 uppercase tracking-wider">{t('Tbl_Department')}</th>
                                 <th className="p-4 text-xs font-bold text-text-light dark:text-slate-400 uppercase tracking-wider">{t('Tbl_Status')}</th>
-                                <th className="p-4 text-xs font-bold text-text-light dark:text-slate-400 uppercase tracking-wider">Pwd Expiry</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
@@ -377,9 +431,6 @@ const UserManagementView: React.FC = () => {
                                             <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'Active' ? 'bg-green-500' : 'bg-gray-500'}`}></span>
                                             {t(`Status_${user.status}`)}
                                         </span>
-                                    </td>
-                                    <td className="p-4 text-xs text-text-light dark:text-slate-400">
-                                        {user.passwordExpiresAt ? new Date(user.passwordExpiresAt).toLocaleDateString() : 'N/A'}
                                     </td>
                                 </tr>
                             ))}
@@ -476,7 +527,6 @@ const OverviewView: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-            {/* Widget 1: Remote Work */}
             <DashboardWidget title={t('RemoteWork')}>
                 <div className="flex flex-col h-full justify-between">
                     <div className="flex items-center justify-between mb-6 bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
@@ -505,7 +555,6 @@ const OverviewView: React.FC = () => {
                 </div>
             </DashboardWidget>
 
-            {/* Widget 2: Admin Automation */}
             <DashboardWidget title={t('AdminAutomation')}>
                 <div className="mb-3 flex justify-between items-center">
                     <span className="text-xs font-semibold uppercase text-text-light dark:text-slate-400">{t('PendingTasks')}</span>
@@ -521,7 +570,6 @@ const OverviewView: React.FC = () => {
                 </button>
             </DashboardWidget>
 
-            {/* Widget 3: Electronic Desk */}
             <DashboardWidget title={t('ElectronicDesk')}>
                 <div className="grid grid-cols-3 gap-2">
                     <DeskIcon label={t('Tool_Mail')} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 00-2-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>} />
@@ -542,14 +590,95 @@ const InternalPortalPage: React.FC = () => {
     const [auth, setAuth] = React.useState<AuthState>({ isAuthenticated: false, user: null, error: null });
     const [currentView, setCurrentView] = React.useState<'Dashboard' | 'UserManagement' | 'Automation'>('Dashboard');
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+    const [userDatabase, setUserDatabase] = React.useState<User[]>([]);
+    const [dbInitialized, setDbInitialized] = React.useState(false);
+
+    // Initialize Mock Database in LocalStorage securely
+    React.useEffect(() => {
+        const initDB = async () => {
+            try {
+                const storedUsers = localStorage.getItem('kkm_portal_users');
+                if (storedUsers) {
+                    setUserDatabase(JSON.parse(storedUsers));
+                } else {
+                    // Seed initial data with hashed passwords
+                    const initialTempPassword = process.env.REACT_APP_INITIAL_PASSWORD || "KKM-Temp-2025";
+                    
+                    const seededUsers: User[] = await Promise.all(PERSONNEL_DATA.map(async (person, index) => {
+                        const salt = generateSalt();
+                        const passwordHash = await hashPassword(initialTempPassword, salt);
+                        return {
+                            id: (index + 1).toString(),
+                            name: person.name,
+                            email: generateEmail(person.name),
+                            role: person.role as UserRole,
+                            department: person.dept,
+                            status: 'Active',
+                            passwordHash: passwordHash,
+                            salt: salt,
+                            requiresPasswordChange: true // Force rotation on first login
+                        };
+                    }));
+                    
+                    localStorage.setItem('kkm_portal_users', JSON.stringify(seededUsers));
+                    setUserDatabase(seededUsers);
+                }
+                setDbInitialized(true);
+            } catch (e) {
+                console.error("Failed to initialize secure DB", e);
+            }
+        };
+        initDB();
+    }, []);
+
+    const handleUpdateUser = (updatedUser: User) => {
+        const newDb = userDatabase.map(u => u.id === updatedUser.id ? updatedUser : u);
+        setUserDatabase(newDb);
+        localStorage.setItem('kkm_portal_users', JSON.stringify(newDb));
+        if (auth.user && auth.user.id === updatedUser.id) {
+            setAuth(prev => ({ ...prev, user: updatedUser }));
+        }
+    };
+
+    const handleCreateUser = async (newUserPartial: Partial<User>) => {
+        if (!newUserPartial.name) return;
+        
+        const initialTempPassword = process.env.REACT_APP_INITIAL_PASSWORD || "KKM-Temp-2025";
+        const salt = generateSalt();
+        const hash = await hashPassword(initialTempPassword, salt);
+        
+        const newUser: User = {
+            id: (Date.now()).toString(),
+            name: newUserPartial.name,
+            email: newUserPartial.email && newUserPartial.email.includes('@') ? newUserPartial.email : generateEmail(newUserPartial.name),
+            role: newUserPartial.role || 'Employee',
+            department: newUserPartial.department || 'General',
+            status: 'Active',
+            passwordHash: hash,
+            salt: salt,
+            requiresPasswordChange: true
+        };
+
+        const newDb = [...userDatabase, newUser];
+        setUserDatabase(newDb);
+        localStorage.setItem('kkm_portal_users', JSON.stringify(newDb));
+    };
 
     const handleLogout = () => {
         setAuth({ isAuthenticated: false, user: null, error: null });
         setCurrentView('Dashboard');
     };
 
+    if (!dbInitialized) return <div className="min-h-screen bg-gray-100 flex items-center justify-center">Initializing Secure Vault...</div>;
+
     if (!auth.isAuthenticated || !auth.user) {
-        return <LoginView onLogin={(user) => setAuth({ isAuthenticated: true, user, error: null })} />;
+        return (
+            <LoginView 
+                onLogin={(user) => setAuth({ isAuthenticated: true, user, error: null })} 
+                userDatabase={userDatabase}
+                onUpdateUser={handleUpdateUser}
+            />
+        );
     }
 
     const isAdmin = auth.user.role === 'Admin';
@@ -646,7 +775,7 @@ const InternalPortalPage: React.FC = () => {
                             transition={{ duration: 0.2 }}
                         >
                             {currentView === 'Dashboard' && <OverviewView />}
-                            {currentView === 'UserManagement' && <UserManagementView />}
+                            {currentView === 'UserManagement' && <UserManagementView users={userDatabase} onCreateUser={handleCreateUser} />}
                             {currentView === 'Automation' && (
                                 <div className="text-center p-12 bg-white dark:bg-slate-800 rounded-xl shadow border border-gray-200 dark:border-slate-700">
                                     <h2 className="text-2xl font-bold text-text-dark dark:text-white mb-2">Automation Module</h2>
