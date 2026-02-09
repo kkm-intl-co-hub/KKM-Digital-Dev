@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import PageHeader from '../components/PageHeader';
 import Section from '../components/Section';
@@ -7,18 +6,19 @@ import { useLanguage } from '../LanguageContext';
 import { Page } from '../types';
 import type { TranslationKey } from '../translations';
 import { motion, AnimatePresence } from 'framer-motion';
+import Avatar from '../components/Avatar';
 
 // Define the type for a leadership member
 type OrgMember = {
     name: TranslationKey;
     role: TranslationKey;
     desc: TranslationKey;
-    image?: string;
+    // Removed 'image' field to ensure factual representation
 }
 
 // Data for the executive leadership team (C-Suite)
 const executiveLeadership: OrgMember[] = [
-    { name: 'GinoAyyoubian', role: 'CEO', desc: 'CEODesc', image: 'https://i.imgur.com/lJ4n79b.jpeg' },
+    { name: 'GinoAyyoubian', role: 'CEO', desc: 'CEODesc' },
     { name: 'DrRezaAsakereh', role: 'CTO', desc: 'CTODesc' },
     { name: 'DrKhosroJarrahian', role: 'CSO', desc: 'CSODesc' },
     { name: 'FaridImani', role: 'CIO', desc: 'CIODesc' },
@@ -35,10 +35,10 @@ const seniorDirectors: OrgMember[] = [
     { name: 'BadieRazi', role: 'DirectorOfProcess', desc: 'ProcessDesc' },
 ];
 
-const testimonials: { quote: TranslationKey; name: TranslationKey; company: TranslationKey; image: string }[] = [
-    { quote: 'TestimonialQuote1', name: 'TestimonialName1', company: 'TestimonialCompany1', image: 'https://i.pravatar.cc/100?u=client1' },
-    { quote: 'TestimonialQuote2', name: 'TestimonialName2', company: 'TestimonialCompany2', image: 'https://i.pravatar.cc/100?u=client2' },
-    { quote: 'TestimonialQuote3', name: 'TestimonialName3', company: 'TestimonialCompany3', image: 'https://i.pravatar.cc/100?u=client3' }
+const testimonials: { quote: TranslationKey; name: TranslationKey; company: TranslationKey; }[] = [
+    { quote: 'TestimonialQuote1', name: 'TestimonialName1', company: 'TestimonialCompany1' },
+    { quote: 'TestimonialQuote2', name: 'TestimonialName2', company: 'TestimonialCompany2' },
+    { quote: 'TestimonialQuote3', name: 'TestimonialName3', company: 'TestimonialCompany3' }
 ];
 
 const awards: { name: TranslationKey; year: string; body: TranslationKey; }[] = [
@@ -65,11 +65,7 @@ const LeadershipCard: React.FC<{ member: OrgMember; t: any }> = ({ member, t }) 
         <div className="h-2 bg-gradient-to-r from-primary to-secondary"></div>
         <div className="p-6 text-center flex-grow flex flex-col">
             <div className="relative inline-block mb-6 mx-auto">
-                <img 
-                    src={member.image || `https://i.pravatar.cc/150?u=${member.name}`} 
-                    alt={t(member.name)}
-                    className="w-32 h-32 rounded-full object-cover ring-4 ring-gray-100 dark:ring-slate-600 shadow-md group-hover:scale-105 transition-transform duration-300" 
-                />
+                <Avatar name={t(member.name)} className="w-32 h-32 text-4xl shadow-md ring-4 ring-gray-100 dark:ring-slate-600 group-hover:scale-105 transition-transform duration-300" />
                 <div className="absolute bottom-1 right-1 w-8 h-8 bg-accent-yellow rounded-full flex items-center justify-center shadow-sm border-2 border-white dark:border-slate-700">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-text-dark" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
@@ -96,8 +92,8 @@ const CompactLeadershipCard: React.FC<{ member: OrgMember; t: any }> = ({ member
                 className="w-full text-left p-4 flex items-center gap-4 focus:outline-none group"
                 aria-expanded={isExpanded}
             >
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 text-lg font-bold shadow-inner transition-colors duration-300 ${isExpanded ? 'bg-primary text-white' : 'bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-600 dark:to-slate-700 text-gray-500 dark:text-gray-300 group-hover:from-primary/10 group-hover:to-primary/20 group-hover:text-primary'}`}>
-                    {t(member.name).charAt(0)}
+                <div className="flex-shrink-0">
+                    <Avatar name={t(member.name)} className="w-12 h-12 text-sm" />
                 </div>
                 <div className="flex-grow min-w-0">
                     <h4 className="font-display font-bold text-base text-text-dark dark:text-white truncate group-hover:text-primary dark:group-hover:text-secondary transition-colors">{t(member.name)}</h4>
@@ -134,7 +130,6 @@ const CompactLeadershipCard: React.FC<{ member: OrgMember; t: any }> = ({ member
 
 const AboutUsPage: React.FC<AboutUsPageProps> = ({ setPage }) => {
   const { t } = useLanguage();
-  const [isSeniorManagementVisible, setIsSeniorManagementVisible] = React.useState(true); // Default to visible for density
   const [currentTestimonial, setCurrentTestimonial] = React.useState(0);
   const [activeSection, setActiveSection] = React.useState('overview');
   const [expandedHistoryYear, setExpandedHistoryYear] = React.useState<string | null>(history[history.length - 1]?.year ?? null);
@@ -142,7 +137,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({ setPage }) => {
   React.useEffect(() => {
     const timer = setTimeout(() => {
         setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 7000); // Change testimonial every 7 seconds
+    }, 7000); 
     return () => clearTimeout(timer);
   }, [currentTestimonial]);
   
@@ -158,7 +153,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({ setPage }) => {
             });
         },
         {
-            rootMargin: `-25% 0px -70% 0px`, // Highlight when section is in the upper part of the viewport
+            rootMargin: `-25% 0px -70% 0px`, 
             threshold: 0
         }
     );
@@ -310,7 +305,6 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({ setPage }) => {
             <div className="bg-gray-50 dark:bg-slate-900/50 rounded-2xl p-8 border border-gray-100 dark:border-slate-700">
                 <div className="flex justify-between items-center mb-8 border-b border-gray-200 dark:border-slate-700 pb-4">
                     <h3 className="text-xl font-display font-bold text-text-dark dark:text-white">{t('SeniorManagementTeam')}</h3>
-                    {/* Optional: Add a toggle if needed, but keeping it visible is better for density/UX per user request */}
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -402,7 +396,9 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({ setPage }) => {
                         transition={{ duration: 0.7, ease: 'easeInOut' }}
                         className="text-center max-w-3xl"
                     >
-                        <img src={testimonials[currentTestimonial].image} alt={t(testimonials[currentTestimonial].name)} className="w-24 h-24 rounded-full mx-auto mb-4 object-cover ring-4 ring-secondary" />
+                        <div className="mx-auto mb-4">
+                            <Avatar name={t(testimonials[currentTestimonial].name)} className="w-24 h-24 text-2xl shadow-lg ring-4 ring-secondary mx-auto" />
+                        </div>
                         <blockquote className="text-xl italic text-text-dark dark:text-slate-200">"{t(testimonials[currentTestimonial].quote)}"</blockquote>
                         <cite className="block mt-4 not-italic">
                             <span className="font-bold text-primary dark:text-white">{t(testimonials[currentTestimonial].name)}</span>, 

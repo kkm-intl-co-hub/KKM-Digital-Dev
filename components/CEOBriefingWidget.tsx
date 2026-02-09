@@ -1,8 +1,8 @@
-
 import * as React from 'react';
 import { GoogleGenAI } from '@google/genai';
 import { useLanguage } from '../LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import Avatar from './Avatar';
 
 const CEOBriefingWidget: React.FC = () => {
     const [headlines, setHeadlines] = React.useState<string[]>([]);
@@ -106,11 +106,7 @@ const CEOBriefingWidget: React.FC = () => {
             <div className="flex items-center p-4 gap-4">
                 {/* CEO Avatar */}
                 <div className="flex-shrink-0 relative">
-                    <img 
-                        src="https://i.imgur.com/lJ4n79b.jpeg"
-                        alt="Gino Ayyoubian, CEO"
-                        className="w-16 h-16 rounded-full object-cover ring-2 ring-primary dark:ring-secondary p-0.5" 
-                    />
+                    <Avatar name="Gino Ayyoubian" className="w-16 h-16 ring-2 ring-primary dark:ring-secondary" textSize="text-xl" />
                     <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white dark:border-slate-800 rounded-full"></div>
                 </div>
 

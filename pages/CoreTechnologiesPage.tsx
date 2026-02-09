@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { GMEL_TECHNOLOGIES, OTHER_CORE_AREAS } from '../constants';
 import PageHeader from '../components/PageHeader';
@@ -266,20 +265,25 @@ const CoreTechnologiesPage: React.FC = () => {
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-24">
                         {technologies.map(tech => {
                             const relatedLinks = tech.relatedIds ? (
-                                <div className="flex flex-wrap items-center gap-2 text-xs">
-                                    <span className="text-text-light dark:text-slate-400 font-medium">Related:</span>
-                                    {tech.relatedIds.map(rid => (
-                                        <button 
-                                            key={rid} 
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleScrollToTech(rid);
-                                            }} 
-                                            className="text-primary-dark dark:text-secondary font-bold bg-primary/10 dark:bg-secondary/10 px-2 py-1 rounded hover:bg-primary/20 dark:hover:bg-secondary/20 transition-colors focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-secondary"
-                                        >
-                                            {t(getTechName(rid) as TranslationKey).replace('GMEL-', '').replace(/\s\(.*\)/, '')}
-                                        </button>
-                                    ))}
+                                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
+                                    <span className="text-xs font-bold text-text-light dark:text-slate-400 uppercase tracking-wider mb-2 block">Related Technologies:</span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {tech.relatedIds.map(rid => (
+                                            <button 
+                                                key={rid} 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleScrollToTech(rid);
+                                                }} 
+                                                className="group flex items-center gap-1 text-xs font-semibold text-primary dark:text-secondary bg-primary/5 dark:bg-slate-700 px-3 py-1.5 rounded-full hover:bg-primary/10 dark:hover:bg-slate-600 transition-all border border-primary/10 dark:border-slate-600 hover:border-primary/30"
+                                            >
+                                                <span>{t(getTechName(rid) as TranslationKey).replace('GMEL-', '').replace(/\s\(.*\)/, '')}</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             ) : null;
 
