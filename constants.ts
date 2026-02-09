@@ -117,21 +117,21 @@ export const NEWS_ITEMS: NewsItem[] = [
 export const VIDEOS: Video[] = [
     {
         title: "News_1_Title", 
-        description: "VisionInMotionSubtitle",
+        description: "News_1_Excerpt",
         thumbnail: "https://i.ytimg.com/vi/GLK6DErFBPA/hqdefault.jpg",
         youtubeId: "GLK6DErFBPA"
     },
     {
         title: "News_2_Title",
-        description: "VisionInMotionSubtitle",
-        thumbnail: "https://i.ytimg.com/vi/m_1119yJv-o/hqdefault.jpg",
-        youtubeId: "m_1119yJv-o"
+        description: "News_2_Excerpt",
+        thumbnail: "https://i.ytimg.com/vi/7atwO8GZ2Qk/hqdefault.jpg",
+        youtubeId: "7atwO8GZ2Qk"
     },
     {
         title: "News_3_Title",
-        description: "VisionInMotionSubtitle",
-        thumbnail: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
-        youtubeId: "dQw4w9WgXcQ"
+        description: "News_3_Excerpt",
+        thumbnail: "https://i.ytimg.com/vi/VqY8b0Qj0h0/hqdefault.jpg",
+        youtubeId: "VqY8b0Qj0h0"
     }
 ];
 
