@@ -116,7 +116,7 @@ const ProjectPipelineCard: React.FC<{ name: string; description: string; index: 
 );
 
 const EmergingTechCard: React.FC<{ title: string; description: string; imageUrl: string }> = ({ title, description, imageUrl }) => (
-    <div className="group relative overflow-hidden rounded-xl shadow-lg h-64">
+    <div className="group relative overflow-hidden rounded-xl shadow-lg h-72">
         <img src={imageUrl} alt={title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 flex flex-col justify-end transition-opacity">
             <h3 className="text-xl font-bold text-white mb-2 translate-y-2 group-hover:translate-y-0 transition-transform">{title}</h3>
@@ -143,7 +143,7 @@ const FuturesPage: React.FC = () => {
     const [isNotifyModalOpen, setIsNotifyModalOpen] = React.useState(false);
     const [activeSection, setActiveSection] = React.useState('vision');
 
-    const sectionIds = ['vision', 'sustainability', 'roadmap', 'innovation', 'pipeline'];
+    const sectionIds = ['vision', 'sustainability', 'roadmap', 'innovation', 'emerging-tech', 'pipeline'];
 
     React.useEffect(() => {
         const observer = new IntersectionObserver(
@@ -181,7 +181,8 @@ const FuturesPage: React.FC = () => {
                     <LocalNavLink id="vision" label={t('Vision_Title')} activeId={activeSection} />
                     <LocalNavLink id="sustainability" label="Sustainability" activeId={activeSection} />
                     <LocalNavLink id="roadmap" label="Roadmap" activeId={activeSection} />
-                    <LocalNavLink id="innovation" label="Innovation" activeId={activeSection} />
+                    <LocalNavLink id="innovation" label="Research" activeId={activeSection} />
+                    <LocalNavLink id="emerging-tech" label="Emerging Tech" activeId={activeSection} />
                     <LocalNavLink id="pipeline" label="Pipeline" activeId={activeSection} />
                 </div>
             </div>
@@ -281,50 +282,56 @@ const FuturesPage: React.FC = () => {
                     </div>
                 </section>
 
-                {/* 4. Research & Emerging Tech Grid */}
+                {/* 4. Research Frontiers */}
                 <section id="innovation" className="scroll-mt-40">
-                    <div className="grid lg:grid-cols-2 gap-12">
-                        {/* Research Column */}
-                        <div>
-                            <h2 className="text-2xl font-display font-bold text-primary-dark dark:text-white mb-2">{t('Research_Title')}</h2>
-                            <p className="text-text-light dark:text-slate-400 mb-8">{t('Research_Subtitle')}</p>
-                            <div className="space-y-6">
-                                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow border-l-4 border-blue-500">
-                                    <h3 className="font-bold text-lg dark:text-white">{t('Research_1_Title')}</h3>
-                                    <p className="text-sm text-text-light dark:text-slate-400 mt-2">{t('Research_1_Desc')}</p>
-                                </div>
-                                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow border-l-4 border-purple-500">
-                                    <h3 className="font-bold text-lg dark:text-white">{t('Research_2_Title')}</h3>
-                                    <p className="text-sm text-text-light dark:text-slate-400 mt-2">{t('Research_2_Desc')}</p>
-                                </div>
-                                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow border-l-4 border-cyan-500">
-                                    <h3 className="font-bold text-lg dark:text-white">{t('Research_3_Title')}</h3>
-                                    <p className="text-sm text-text-light dark:text-slate-400 mt-2">{t('Research_3_Desc')}</p>
-                                </div>
-                            </div>
+                    <h2 className="text-2xl font-display font-bold text-primary-dark dark:text-white mb-2">{t('Research_Title')}</h2>
+                    <p className="text-text-light dark:text-slate-400 mb-8">{t('Research_Subtitle')}</p>
+                    <div className="grid md:grid-cols-3 gap-6">
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow border-l-4 border-blue-500">
+                            <h3 className="font-bold text-lg dark:text-white">{t('Research_1_Title')}</h3>
+                            <p className="text-sm text-text-light dark:text-slate-400 mt-2">{t('Research_1_Desc')}</p>
                         </div>
-
-                        {/* Emerging Tech Column */}
-                        <div>
-                            <h2 className="text-2xl font-display font-bold text-primary-dark dark:text-white mb-2">{t('EmergingTech_Title')}</h2>
-                            <p className="text-text-light dark:text-slate-400 mb-8">{t('EmergingTech_Subtitle')}</p>
-                            <div className="grid gap-6">
-                                <EmergingTechCard 
-                                    title={t('Tech_Quantum_Name')} 
-                                    description={t('Tech_Quantum_Desc')} 
-                                    imageUrl="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&q=80"
-                                />
-                                <EmergingTechCard 
-                                    title={t('Tech_Bio_Name')} 
-                                    description={t('Tech_Bio_Desc')} 
-                                    imageUrl="https://images.unsplash.com/photo-1518531933037-9a847631319d?auto=format&fit=crop&w=800&q=80"
-                                />
-                            </div>
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow border-l-4 border-purple-500">
+                            <h3 className="font-bold text-lg dark:text-white">{t('Research_2_Title')}</h3>
+                            <p className="text-sm text-text-light dark:text-slate-400 mt-2">{t('Research_2_Desc')}</p>
+                        </div>
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow border-l-4 border-cyan-500">
+                            <h3 className="font-bold text-lg dark:text-white">{t('Research_3_Title')}</h3>
+                            <p className="text-sm text-text-light dark:text-slate-400 mt-2">{t('Research_3_Desc')}</p>
                         </div>
                     </div>
                 </section>
 
-                {/* 5. Future Projects Pipeline */}
+                {/* 5. Emerging Technologies */}
+                <section id="emerging-tech" className="scroll-mt-40 py-12 rounded-3xl bg-slate-900 text-white relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
+                    <div className="relative z-10 container mx-auto px-6">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl font-display font-bold text-white mb-2">{t('EmergingTech_SectionTitle')}</h2>
+                            <p className="text-slate-400 max-w-2xl mx-auto">{t('EmergingTech_SectionSubtitle')}</p>
+                        </div>
+                        
+                        <div className="grid md:grid-cols-3 gap-8">
+                            <EmergingTechCard 
+                                title={t('Tech_AR_Title')} 
+                                description={t('Tech_AR_Desc')} 
+                                imageUrl="https://images.unsplash.com/photo-1614726365723-49cfae96a604?auto=format&fit=crop&w=800&q=80"
+                            />
+                            <EmergingTechCard 
+                                title={t('Tech_Graphene_Title')} 
+                                description={t('Tech_Graphene_Desc')} 
+                                imageUrl="https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80"
+                            />
+                            <EmergingTechCard 
+                                title={t('Tech_AI_Title')} 
+                                description={t('Tech_AI_Desc')} 
+                                imageUrl="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80"
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                {/* 6. Future Projects Pipeline */}
                 <section id="pipeline" className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700 scroll-mt-40">
                     <h2 className="text-2xl font-display font-bold text-primary-dark dark:text-white mb-2 text-center">{t('FutureProjects_Title')}</h2>
                     <p className="text-text-light dark:text-slate-400 mb-8 text-center">{t('FutureProjects_Subtitle')}</p>

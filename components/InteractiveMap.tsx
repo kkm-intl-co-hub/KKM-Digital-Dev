@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import type { MapMarker } from '../types';
 import { useLanguage } from '../LanguageContext';
@@ -108,21 +109,15 @@ const loadMapsApi = () => {
         
         // 2. Sanitize and Validate API Key
         let apiKey = '';
-        try {
-            // Try to access the key safely
-            apiKey = process.env.API_KEY || '';
-        } catch (e) {
-            // If process is undefined
-            console.warn("Could not access process.env.API_KEY", e);
+        if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+            apiKey = process.env.API_KEY;
         }
 
         apiKey = apiKey ? apiKey.replace(/['";]/g, '').trim() : '';
         
         // Heuristic check: Google Maps keys are typically ~39 chars.
-        // If it's empty, too short, or a placeholder like "TODO", fail early to avoid InvalidKeyMapError.
         if (!apiKey || apiKey.length < 20 || apiKey === 'TODO' || apiKey.includes('YOUR_API_KEY')) {
             const error = new Error("Invalid or missing Google Maps API Key.");
-            console.warn(error.message);
             cleanup();
             reject(error);
             return;
@@ -137,7 +132,6 @@ const loadMapsApi = () => {
 
         const script = document.createElement('script');
         script.id = SCRIPT_ID;
-        // Add callback and loading parameters correctly
         script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=weekly&callback=${MAP_CALLBACK_NAME}&loading=async`;
         script.async = true;
         script.defer = true;
@@ -272,7 +266,10 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ projects, activeProject
              console.error("Error loading Maps API:", err);
              // Check if message relates to authorization to show user-friendly error
              const isAuthError = err.message && (err.message.toLowerCase().includes("authentication") || err.message.toLowerCase().includes("api key") || err.message.includes("InvalidKeyMapError"));
-             setLoadError(isAuthError ? "Map Service Unavailable" : t('MapLoadError'));
+             // Also treat missing key explicitly as a service unavailable error to show the fallback UI
+             const isMissingKey = err.message && err.message.includes("Invalid or missing Google Maps API Key");
+             
+             setLoadError((isAuthError || isMissingKey) ? "Map Service Unavailable" : t('MapLoadError'));
              setIsLoading(false);
         });
 
