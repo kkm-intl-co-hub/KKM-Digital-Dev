@@ -170,8 +170,16 @@ export const translations: Translations = {
     'Tech_Quantum_Desc': 'Sub-surface mapping with atom-level precision to identify geothermal reservoirs without invasive drilling.',
     'Tech_Bio_Name': 'Bio-Concrete',
     'Tech_Bio_Desc': 'Self-healing structural materials infused with bacteria that repair cracks and absorb CO2 over time.',
-    'Sustainability_Title': 'Planetary Healing Goals',
-    'Sustainability_Desc': 'Our specific commitments to the biosphere.',
+    
+    // Sustainability Section
+    'Sustainability_Title': 'Sustainability Commitments',
+    'Sustainability_Desc': 'Our roadmap to Planetary Healing is built on three non-negotiable pillars aimed at restoring the biosphere.',
+    'Sus_Carbon_Title': 'Decarbonization',
+    'Sus_Carbon_Desc': 'Achieving Net Zero emissions across all scope 1, 2, and 3 activities by 2030 through direct geothermal adoption and green hydrogen integration.',
+    'Sus_Waste_Title': 'Zero-Waste Models',
+    'Sus_Waste_Desc': 'Implementing 100% circular material flows in construction and operations, ensuring no industrial byproduct reaches landfill.',
+    'Sus_Bio_Title': 'Biodiversity Protection',
+    'Sus_Bio_Desc': 'Mandating a "Net Positive" impact on local ecosystems for every project, utilizing bio-integrative engineering to restore natural habitats.',
     'Sus_Goal_1': 'Reversing desertification near energy hubs through micro-climate engineering.',
     'Sus_Goal_2': 'Zero-impact thermal discharge into marine environments.',
     'Sus_Goal_3': '100% material circularity in all construction projects by 2040.',
@@ -188,8 +196,6 @@ export const translations: Translations = {
     'InternalPortalLoginTitle': 'KKM Team Portal',
     'InternalPortalLoginSubtitle': 'Authorized Personnel Access System',
     // ... (All other existing keys would be here) ...
-    // Note: For brevity in this update, I am ensuring the keys requested in the prompt are present.
-    // The previous keys for Projects, News, etc. remain implicitly part of the full file.
     
     // Projects
     'ProjectsPageSubtitle': 'Translating strategic vision into tangible reality.',
