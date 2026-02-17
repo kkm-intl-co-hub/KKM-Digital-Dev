@@ -315,17 +315,17 @@ const FuturesPage: React.FC = () => {
                             <EmergingTechCard 
                                 title={t('Tech_AR_Title')} 
                                 description={t('Tech_AR_Desc')} 
-                                imageUrl="https://images.unsplash.com/photo-1614726365723-49cfae96a604?auto=format&fit=crop&w=800&q=80"
+                                imageUrl="https://images.unsplash.com/photo-1535378437327-b71494669e9d?auto=format&fit=crop&w=800&q=80"
                             />
                             <EmergingTechCard 
                                 title={t('Tech_Graphene_Title')} 
                                 description={t('Tech_Graphene_Desc')} 
-                                imageUrl="https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80"
+                                imageUrl="https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=800&q=80"
                             />
                             <EmergingTechCard 
                                 title={t('Tech_AI_Title')} 
                                 description={t('Tech_AI_Desc')} 
-                                imageUrl="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80"
+                                imageUrl="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80"
                             />
                         </div>
                     </div>
