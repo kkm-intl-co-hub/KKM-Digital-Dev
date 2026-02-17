@@ -74,33 +74,25 @@ const NotifyModal: React.FC<{onClose: () => void; t: (key: TranslationKey) => st
 
 // --- Sub-Components ---
 
-const VisionCard: React.FC<{ title: string; description: string; icon: React.ReactNode }> = ({ title, description, icon }) => {
-    // Robust splitting logic for bullet points
-    const points = React.useMemo(() => {
-        return description.split(/(?<=[.!?])\s+/)
-            .map(s => s.trim())
-            .filter(s => s.length > 0);
-    }, [description]);
-
-    return (
-        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-white/20 dark:border-slate-700 transition-all hover:scale-105 hover:shadow-2xl flex flex-col items-center text-center h-full">
-            <div className="bg-gradient-to-br from-primary to-secondary p-4 rounded-full text-white mb-6 shadow-lg">
-                {icon}
-            </div>
-            <h3 className="text-xl font-display font-bold text-primary-dark dark:text-white mb-4">{title}</h3>
-            <ul className="text-text-light dark:text-slate-300 leading-relaxed text-sm list-disc list-inside text-left w-full space-y-3">
-                {points.map((point, idx) => (
-                    <li key={idx} className="pl-1">{point}</li>
-                ))}
-            </ul>
+const VisionCard: React.FC<{ title: string; description: string; icon: React.ReactNode }> = ({ title, description, icon }) => (
+    <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-white/20 dark:border-slate-700 transition-all hover:scale-105 hover:shadow-2xl flex flex-col items-center text-center h-full">
+        <div className="bg-gradient-to-br from-primary to-secondary p-4 rounded-full text-white mb-6 shadow-lg">
+            {icon}
         </div>
-    );
-};
+        <h3 className="text-xl font-display font-bold text-primary-dark dark:text-white mb-4">{title}</h3>
+        <ul className="text-text-light dark:text-slate-300 leading-relaxed text-sm list-disc list-inside text-left w-full space-y-3">
+            {/* Split description by sentences for bullet points to improve readability */}
+            {description.split('. ').map((sentence, idx) => (
+                sentence.trim() && <li key={idx} className="pl-1">{sentence.trim()}{!sentence.endsWith('.') && '.'}</li>
+            ))}
+        </ul>
+    </div>
+);
 
 const RoadmapNode: React.FC<{ year: string; title: string; description: string; icon: React.ReactNode; isLast?: boolean }> = ({ year, title, description, icon, isLast }) => (
     <div className="flex relative pb-12 last:pb-0">
         {!isLast && <div className="absolute top-10 left-6 -ml-px h-full w-0.5 bg-gray-200 dark:bg-slate-700"></div>}
-        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white dark:bg-slate-800 border-4 border-primary dark:border-secondary flex items-center justify-center relative z-10 shadow-md transform transition-transform hover:scale-110">
+        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white dark:bg-slate-800 border-4 border-primary dark:border-secondary flex items-center justify-center relative z-10 shadow-md">
             {icon}
         </div>
         <div className="ml-6 flex-grow pt-1">
@@ -114,7 +106,7 @@ const RoadmapNode: React.FC<{ year: string; title: string; description: string; 
 );
 
 const ProjectPipelineCard: React.FC<{ name: string; description: string; index: number }> = ({ name, description, index }) => (
-    <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6 border-l-4 border-accent-yellow shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
+    <div className="bg-gray-50 dark:bg-slate-900 rounded-lg p-6 border-l-4 border-accent-yellow shadow-sm hover:shadow-md transition-shadow">
         <div className="flex justify-between items-start mb-2">
             <h4 className="font-bold text-lg text-text-dark dark:text-white">{name}</h4>
             <span className="text-xs font-mono bg-gray-200 dark:bg-slate-800 px-2 py-1 rounded text-text-light dark:text-slate-400">Concept #{index + 1}</span>
@@ -124,8 +116,8 @@ const ProjectPipelineCard: React.FC<{ name: string; description: string; index: 
 );
 
 const EmergingTechCard: React.FC<{ title: string; description: string; imageUrl: string }> = ({ title, description, imageUrl }) => (
-    <div className="group relative overflow-hidden rounded-xl shadow-lg h-64 bg-gray-200 dark:bg-slate-700">
-        <img src={imageUrl} alt={title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
+    <div className="group relative overflow-hidden rounded-xl shadow-lg h-64">
+        <img src={imageUrl} alt={title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-6 flex flex-col justify-end transition-opacity">
             <h3 className="text-xl font-bold text-white mb-2 translate-y-2 group-hover:translate-y-0 transition-transform">{title}</h3>
             <p className="text-sm text-gray-200 opacity-0 group-hover:opacity-100 transition-opacity delay-100">{description}</p>
@@ -133,19 +125,71 @@ const EmergingTechCard: React.FC<{ title: string; description: string; imageUrl:
     </div>
 );
 
+const LocalNavLink: React.FC<{id: string, label: string, activeId: string}> = ({id, label, activeId}) => (
+    <a 
+        href={`#${id}`} 
+        className={`px-4 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap border ${
+            activeId === id 
+                ? 'bg-primary border-primary text-white shadow-md' 
+                : 'bg-white/80 dark:bg-slate-800/80 border-transparent text-text-light dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:border-gray-200 dark:hover:border-slate-600'
+        }`}
+    >
+        {label}
+    </a>
+);
+
 const FuturesPage: React.FC = () => {
     const { t } = useLanguage();
     const [isNotifyModalOpen, setIsNotifyModalOpen] = React.useState(false);
+    const [activeSection, setActiveSection] = React.useState('vision');
+
+    const sectionIds = ['vision', 'sustainability', 'roadmap', 'innovation', 'pipeline'];
+
+    React.useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setActiveSection(entry.target.id);
+                    }
+                });
+            },
+            { rootMargin: `-25% 0px -70% 0px`, threshold: 0 }
+        );
+
+        sectionIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) observer.observe(el);
+        });
+
+        return () => {
+            sectionIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) observer.unobserve(el);
+            });
+        };
+    }, []);
 
     return (
         <div>
             {isNotifyModalOpen && <NotifyModal onClose={() => setIsNotifyModalOpen(false)} t={t} />}
             <PageHeader title={t('Futures_Hero_Title')} subtitle={t('Futures_Hero_Subtitle')} />
             
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 my-16 space-y-24">
+            {/* Local Sticky Navigation */}
+            <div className="sticky top-16 md:top-20 z-30 py-3 bg-gray-50/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 shadow-sm transition-all duration-300">
+                <div className="container mx-auto px-4 overflow-x-auto no-scrollbar flex gap-2 pb-1 justify-start md:justify-center">
+                    <LocalNavLink id="vision" label={t('Vision_Title')} activeId={activeSection} />
+                    <LocalNavLink id="sustainability" label="Sustainability" activeId={activeSection} />
+                    <LocalNavLink id="roadmap" label="Roadmap" activeId={activeSection} />
+                    <LocalNavLink id="innovation" label="Innovation" activeId={activeSection} />
+                    <LocalNavLink id="pipeline" label="Pipeline" activeId={activeSection} />
+                </div>
+            </div>
+
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 my-12 space-y-24">
                 
                 {/* 1. Vision Section */}
-                <section>
+                <section id="vision" className="scroll-mt-40">
                     <h2 className="text-3xl font-display font-bold text-center text-primary-dark dark:text-white mb-12">{t('Vision_Title')}</h2>
                     <div className="grid md:grid-cols-3 gap-8">
                         <VisionCard 
@@ -167,7 +211,7 @@ const FuturesPage: React.FC = () => {
                 </section>
 
                 {/* 2. Sustainability Commitments - Dedicated Subsection */}
-                <section className="bg-green-50/50 dark:bg-green-900/10 rounded-3xl p-8 md:p-12 border border-green-100 dark:border-green-900/30 shadow-sm relative overflow-hidden">
+                <section id="sustainability" className="bg-green-50/50 dark:bg-green-900/10 rounded-3xl p-8 md:p-12 border border-green-100 dark:border-green-900/30 shadow-sm relative overflow-hidden scroll-mt-40">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-green-200/20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
                     <div className="text-center max-w-3xl mx-auto mb-12">
                         <span className="text-green-600 dark:text-green-400 font-bold uppercase tracking-wider text-xs mb-2 block">{t('Vision_1_Title')}</span>
@@ -177,48 +221,36 @@ const FuturesPage: React.FC = () => {
 
                     <div className="grid md:grid-cols-3 gap-8">
                         {/* Decarbonization */}
-                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border-t-4 border-green-500 hover:shadow-lg transition-shadow">
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border-t-4 border-green-500">
                             <div className="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mb-4 text-green-600 dark:text-green-400">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.707 4.5l.523-1.16a.5.5 0 01.88.397V7.5a.5.5 0 01-.5.5h-2a.5.5 0 01-.397-.88l1.16-.523zM10.5 13.5a2.5 2.5 0 115 0 2.5 2.5 0 01-5 0z" /></svg>
                             </div>
                             <h3 className="text-lg font-bold text-text-dark dark:text-white mb-2">{t('Sus_Carbon_Title')}</h3>
-                            <p className="text-sm text-text-light dark:text-slate-400 mb-4">{t('Sus_Carbon_Desc')}</p>
-                            <div className="pt-4 border-t border-gray-100 dark:border-slate-700">
-                                <span className="text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-wide">Primary Goal</span>
-                                <p className="text-xs text-text-dark dark:text-slate-300 mt-1">Net Zero emissions by 2030.</p>
-                            </div>
+                            <p className="text-sm text-text-light dark:text-slate-400">{t('Sus_Carbon_Desc')}</p>
                         </div>
 
                         {/* Zero-Waste */}
-                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border-t-4 border-teal-500 hover:shadow-lg transition-shadow">
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border-t-4 border-teal-500">
                             <div className="w-12 h-12 bg-teal-100 dark:bg-teal-900/50 rounded-full flex items-center justify-center mb-4 text-teal-600 dark:text-teal-400">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                             </div>
                             <h3 className="text-lg font-bold text-text-dark dark:text-white mb-2">{t('Sus_Waste_Title')}</h3>
-                            <p className="text-sm text-text-light dark:text-slate-400 mb-4">{t('Sus_Waste_Desc')}</p>
-                            <div className="pt-4 border-t border-gray-100 dark:border-slate-700">
-                                <span className="text-xs font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wide">Key Target</span>
-                                <p className="text-xs text-text-dark dark:text-slate-300 mt-1">{t('Sus_Goal_3')}</p>
-                            </div>
+                            <p className="text-sm text-text-light dark:text-slate-400">{t('Sus_Waste_Desc')}</p>
                         </div>
 
                         {/* Biodiversity */}
-                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border-t-4 border-emerald-500 hover:shadow-lg transition-shadow">
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border-t-4 border-emerald-500">
                             <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center mb-4 text-emerald-600 dark:text-emerald-400">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
                             </div>
                             <h3 className="text-lg font-bold text-text-dark dark:text-white mb-2">{t('Sus_Bio_Title')}</h3>
-                            <p className="text-sm text-text-light dark:text-slate-400 mb-4">{t('Sus_Bio_Desc')}</p>
-                            <div className="pt-4 border-t border-gray-100 dark:border-slate-700">
-                                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Initiative</span>
-                                <p className="text-xs text-text-dark dark:text-slate-300 mt-1">{t('Sus_Goal_1')}</p>
-                            </div>
+                            <p className="text-sm text-text-light dark:text-slate-400">{t('Sus_Bio_Desc')}</p>
                         </div>
                     </div>
                 </section>
 
                 {/* 3. Strategic Roadmap */}
-                <section>
+                <section id="roadmap" className="scroll-mt-40">
                     <h2 className="text-3xl font-display font-bold text-center text-primary-dark dark:text-white mb-12">{t('Roadmap_Title')}</h2>
                     <div className="max-w-3xl mx-auto pl-4 md:pl-0">
                         <RoadmapNode 
@@ -250,7 +282,7 @@ const FuturesPage: React.FC = () => {
                 </section>
 
                 {/* 4. Research & Emerging Tech Grid */}
-                <section>
+                <section id="innovation" className="scroll-mt-40">
                     <div className="grid lg:grid-cols-2 gap-12">
                         {/* Research Column */}
                         <div>
@@ -293,7 +325,7 @@ const FuturesPage: React.FC = () => {
                 </section>
 
                 {/* 5. Future Projects Pipeline */}
-                <section className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700">
+                <section id="pipeline" className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700 scroll-mt-40">
                     <h2 className="text-2xl font-display font-bold text-primary-dark dark:text-white mb-2 text-center">{t('FutureProjects_Title')}</h2>
                     <p className="text-text-light dark:text-slate-400 mb-8 text-center">{t('FutureProjects_Subtitle')}</p>
                     

@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { Page } from '../types';
 import { NAV_LINKS } from '../constants';
@@ -68,9 +69,11 @@ const FlagIcon: React.FC<{ lang: Language, className?: string }> = ({ lang, clas
     }
 }
 
-const KkmLogo: React.FC = () => {
+const KkmLogo: React.FC<{ useWhiteText?: boolean }> = ({ useWhiteText = false }) => {
     const { theme } = useTheme();
-    const textColor = theme === 'dark' ? 'white' : '#002D56';
+    // If explicit white text is requested (for transparent header on dark hero), use white.
+    // Otherwise follow theme: white for dark mode, dark blue for light mode.
+    const textColor = useWhiteText ? 'white' : (theme === 'dark' ? 'white' : '#002D56');
 
     return (
         <motion.div initial="rest" whileHover="hover" animate="rest" className="cursor-pointer">
@@ -164,13 +167,28 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setPage, onSearch }) => {
     }
   };
 
-  // Simplest variants to guarantee visibility
   const menuVariants = {
     closed: { opacity: 0, y: -20 },
     open: { opacity: 1, y: 0 }
   };
 
-  const headerClasses = `sticky top-0 z-50 w-full transition-all duration-300 py-2 ${isScrolled || isMenuOpen || isSearchOpen ? 'bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-lg border-b border-gray-200 dark:border-slate-800' : 'bg-transparent'}`;
+  // Logic to determine if we are in "Transparent Header Mode" on the Home Page
+  // This mode is active only when: on Home Page, not scrolled, menu is closed, search is closed.
+  const isHomeTransparent = currentPage === Page.Home && !isScrolled && !isMenuOpen && !isSearchOpen;
+
+  const headerClasses = `sticky top-0 z-50 w-full transition-all duration-300 py-2 ${
+    isHomeTransparent 
+      ? 'bg-transparent' 
+      : 'bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-lg border-b border-gray-200 dark:border-slate-800'
+  }`;
+
+  // Button Contrast Logic
+  const buttonBaseClass = "p-2 rounded-full transition-colors";
+  // On transparent home header: hover white/20, text white.
+  // Otherwise: hover gray/slate, text dark/slate-200.
+  const controlButtonClass = isHomeTransparent
+    ? `${buttonBaseClass} hover:bg-white/20 text-white`
+    : `${buttonBaseClass} hover:bg-gray-200 dark:hover:bg-slate-700 text-text-dark dark:text-slate-200`;
 
   return (
     <header className={headerClasses} role="banner">
@@ -178,15 +196,22 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setPage, onSearch }) => {
         <div className="flex items-center justify-between h-16 md:h-20 lg:h-24">
           <div className="flex-shrink-0 z-50">
             <button onClick={() => setPage(Page.Home)} className="block logo-container focus:outline-none rounded-lg" aria-label={t('AriaLabel_GoHome')}>
-              <KkmLogo />
+              <KkmLogo useWhiteText={isHomeTransparent} />
             </button>
           </div>
 
+          {/* Desktop Nav */}
           <nav className="hidden xl:flex items-center space-x-1" role="navigation" aria-label={t('AriaLabel_MainNavigation')}>
             {NAV_LINKS.map(link => {
               const isActive = currentPage === link.name;
+              // Desktop Nav Colors
+              let textColor = 'text-text-dark dark:text-slate-100';
+              if (isHomeTransparent) textColor = 'text-white hover:text-gray-200';
+              if (isActive) textColor = 'text-white';
+              else if (!isHomeTransparent) textColor += ' hover:text-primary-dark';
+
               return (
-                <button key={link.name} onClick={() => setPage(link.name)} className={`relative px-3 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-all duration-200 z-10 ${isActive ? 'text-white' : isScrolled ? 'text-text-dark dark:text-slate-200 hover:text-primary' : 'text-text-dark dark:text-slate-100 hover:text-primary-dark'}`}>
+                <button key={link.name} onClick={() => setPage(link.name)} className={`relative px-3 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-all duration-200 z-10 ${textColor}`}>
                   {isActive && <motion.div layoutId="navbar-active" className="absolute inset-0 bg-primary-dark shadow-lg rounded-md -z-10" />}
                   <span>{t(link.name)}</span>
                 </button>
@@ -195,19 +220,19 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setPage, onSearch }) => {
           </nav>
           
           <div className="flex items-center space-x-2 md:space-x-3 z-50">
-            <motion.button onClick={() => setIsSearchOpen(!isSearchOpen)} className={`p-2 rounded-full transition-colors ${isScrolled || isSearchOpen ? 'hover:bg-gray-200 dark:hover:bg-slate-700 bg-gray-100 dark:bg-slate-800' : 'hover:bg-white/20'}`} aria-label={t('AriaLabel_SearchToggle')} whileTap={{ scale: 0.9 }}>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6 text-text-dark dark:text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <motion.button onClick={() => setIsSearchOpen(!isSearchOpen)} className={`${controlButtonClass} ${isSearchOpen ? 'bg-gray-100 dark:bg-slate-800 !text-text-dark dark:!text-white' : ''}`} aria-label={t('AriaLabel_SearchToggle')} whileTap={{ scale: 0.9 }}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </motion.button>
             
-            <button onClick={toggleTheme} className={`p-2 rounded-full transition-colors ${isScrolled ? 'hover:bg-gray-200 dark:hover:bg-slate-700' : 'hover:bg-white/20'}`} aria-label={t('AriaLabel_ThemeToggle')}>
-              {theme === 'light' ? <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6 text-text-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg> : <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
+            <button onClick={toggleTheme} className={controlButtonClass} aria-label={t('AriaLabel_ThemeToggle')}>
+              {theme === 'light' ? <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg> : <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
             </button>
             
             <div className="relative" ref={langMenuRef}>
-                <button onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} className={`p-1.5 md:p-2 rounded-full transition-colors flex items-center gap-2 border border-transparent ${isScrolled ? 'hover:bg-gray-200 dark:hover:bg-slate-700' : 'hover:bg-white/20'} ${isLangMenuOpen ? 'bg-primary/10 border-primary/20' : ''}`} aria-label={t('AriaLabel_LanguageSelector')}>
+                <button onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} className={`p-1.5 md:p-2 rounded-full transition-colors flex items-center gap-2 border border-transparent ${isHomeTransparent ? 'hover:bg-white/20 text-white' : 'hover:bg-gray-200 dark:hover:bg-slate-700 text-primary-dark dark:text-secondary'} ${isLangMenuOpen ? 'bg-primary/10 border-primary/20' : ''}`} aria-label={t('AriaLabel_LanguageSelector')}>
                     <FlagIcon lang={language} className="w-5 h-5 md:w-6 md:h-6 shadow-md rounded-sm overflow-hidden" />
-                    <span className="hidden md:inline text-xs font-black uppercase tracking-widest text-primary-dark dark:text-secondary">{langNames[language]}</span>
-                    <span className="md:hidden text-[10px] font-bold dark:text-slate-200">{language}</span>
+                    <span className="hidden md:inline text-xs font-black uppercase tracking-widest">{langNames[language]}</span>
+                    <span className="md:hidden text-[10px] font-bold">{language}</span>
                 </button>
                 <AnimatePresence>
                     {isLangMenuOpen && (
@@ -228,7 +253,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setPage, onSearch }) => {
             </div>
 
             <div className="xl:hidden">
-              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className={`p-2 rounded-md ${isScrolled ? 'hover:bg-gray-200 dark:hover:bg-slate-700 text-text-dark dark:text-slate-200' : 'hover:bg-white/20 text-text-dark dark:text-slate-100'}`} aria-label={t('AriaLabel_MobileMenu')}>
+              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className={controlButtonClass} aria-label={t('AriaLabel_MobileMenu')}>
                 {isMenuOpen ? <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg> : <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>}
               </button>
             </div>
@@ -259,11 +284,10 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setPage, onSearch }) => {
             exit="closed"
             variants={menuVariants}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            // Fixed full screen overlay, z-40 sits below header z-50 to avoid covering logo/close button
-            // Padding top ensures content starts below header
-            className="xl:hidden fixed inset-0 z-40 bg-white dark:bg-slate-900 pt-[80px] md:pt-[96px] overflow-y-auto"
+            className="xl:hidden fixed inset-0 z-40 bg-white dark:bg-slate-900 overflow-y-auto h-[100dvh]"
+            style={{ paddingTop: '96px' }} // Fixed padding to clear header
           >
-            <div className="px-6 py-8 space-y-4">
+            <div className="px-6 pb-24 space-y-4">
               {NAV_LINKS.map(link => (
                 <button 
                     key={link.name} 
@@ -277,7 +301,10 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setPage, onSearch }) => {
           </motion.div>
         )}
       </AnimatePresence>
-      <motion.div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-secondary origin-left" style={{ scaleX }} />
+      
+      {!isHomeTransparent && (
+        <motion.div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-secondary origin-left" style={{ scaleX }} />
+      )}
     </header>
   );
 };
