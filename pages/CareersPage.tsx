@@ -110,9 +110,42 @@ const CareersPage: React.FC = () => {
             <PageHeader title={t(Page.Careers)} subtitle={t('CareersPageSubtitle')} />
             
             <section className="container mx-auto px-4 sm:px-6 lg:px-8 my-16">
-                <h2 className="text-3xl md:text-4xl font-display font-extrabold text-primary-dark dark:text-white text-center">{t('WhyWorkAtKKM')}</h2>
-                <p className="mt-4 text-lg text-text-light dark:text-slate-300 text-center max-w-3xl mx-auto">{t('WhyWorkAtKKMSubtitle')}</p>
-                <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="text-center mb-16">
+                    <h2 className="text-3xl md:text-4xl font-display font-extrabold text-primary-dark dark:text-white">{t('WhyWorkAtKKM')}</h2>
+                    <p className="mt-4 text-lg text-text-light dark:text-slate-300 max-w-3xl mx-auto">{t('WhyWorkAtKKMSubtitle')}</p>
+                </div>
+
+                <div className="grid lg:grid-cols-3 gap-12 mb-20">
+                    <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                        <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-2xl font-display font-bold text-primary-dark dark:text-secondary mb-4">{t('CultureAndValues')}</h3>
+                        <p className="text-text-light dark:text-slate-400 leading-relaxed">{t('CultureAndValuesDesc')}</p>
+                    </div>
+                    <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                        <div className="w-12 h-12 bg-accent-yellow/10 rounded-xl flex items-center justify-center mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-accent-dark dark:text-accent-yellow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                            </svg>
+                        </div>
+                        <h3 className="text-2xl font-display font-bold text-primary-dark dark:text-secondary mb-4">{t('BenefitsAndPerks')}</h3>
+                        <p className="text-text-light dark:text-slate-400 leading-relaxed">{t('BenefitsAndPerksDesc')}</p>
+                    </div>
+                    <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                        <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            </svg>
+                        </div>
+                        <h3 className="text-2xl font-display font-bold text-primary-dark dark:text-secondary mb-4">{t('GrowthAndDevelopment')}</h3>
+                        <p className="text-text-light dark:text-slate-400 leading-relaxed">{t('GrowthAndDevelopmentDesc')}</p>
+                    </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {benefits.map(b => <BenefitCard key={b.title} {...b} />)}
                 </div>
             </section>
@@ -163,6 +196,45 @@ const CareersPage: React.FC = () => {
                 </div>
             </section>
             
+            <section className="bg-white dark:bg-slate-800 py-20 border-y border-gray-100 dark:border-slate-700">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="max-w-4xl mx-auto text-center">
+                        <h2 className="text-3xl md:text-4xl font-display font-extrabold text-primary-dark dark:text-white mb-4">{t('HowToApply')}</h2>
+                        <p className="text-lg text-text-light dark:text-slate-300 mb-12">{t('HowToApplySubtitle')}</p>
+                        
+                        <div className="grid md:grid-cols-3 gap-8 text-left mb-12">
+                            <div className="relative">
+                                <div className="text-5xl font-display font-black text-primary/10 absolute -top-6 -left-2 select-none">01</div>
+                                <h4 className="text-xl font-bold text-primary-dark dark:text-white mb-2 relative z-10">{t('Step1Title')}</h4>
+                                <p className="text-text-light dark:text-slate-400 text-sm">{t('Step1Desc')}</p>
+                            </div>
+                            <div className="relative">
+                                <div className="text-5xl font-display font-black text-primary/10 absolute -top-6 -left-2 select-none">02</div>
+                                <h4 className="text-xl font-bold text-primary-dark dark:text-white mb-2 relative z-10">{t('Step2Title')}</h4>
+                                <p className="text-text-light dark:text-slate-400 text-sm">{t('Step2Desc')}</p>
+                            </div>
+                            <div className="relative">
+                                <div className="text-5xl font-display font-black text-primary/10 absolute -top-6 -left-2 select-none">03</div>
+                                <h4 className="text-xl font-bold text-primary-dark dark:text-white mb-2 relative z-10">{t('Step3Title')}</h4>
+                                <p className="text-text-light dark:text-slate-400 text-sm">{t('Step3Desc')}</p>
+                            </div>
+                        </div>
+
+                        <a 
+                            href="https://portal.kkm-intl.org/careers" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white font-bold rounded-full hover:bg-secondary transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                        >
+                            <span>{t('VisitApplicationPortal')}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
             <section className="container mx-auto px-4 sm:px-6 lg:px-8 my-20">
                 <h2 className="text-3xl md:text-4xl font-display font-extrabold text-primary-dark dark:text-white text-center mb-12">{t('HearFromOurTeam')}</h2>
                 <div className="grid md:grid-cols-3 gap-8">
