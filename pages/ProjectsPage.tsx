@@ -122,13 +122,14 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ setPage }) => {
                                         <motion.button 
                                             key={project.name} 
                                             variants={listItemVariants}
-                                            whileHover={{ scale: 1.02, x: 4 }}
+                                            whileHover={{ scale: 1.02, y: -2 }}
                                             whileTap={{ scale: 0.98 }}
+                                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
                                             ref={el => { itemRefs.current[project.name] = el; }}
-                                            className={`w-full text-left p-3 rounded-xl transition-all duration-200 border group flex gap-4 items-start ${
+                                            className={`w-full text-left p-3 rounded-xl transition-all duration-300 border group flex gap-4 items-start ${
                                                 isHovered
-                                                    ? 'bg-white dark:bg-slate-700 border-primary ring-1 ring-primary/30 shadow-lg z-10 relative' 
-                                                    : 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 hover:shadow-md'
+                                                    ? 'bg-white dark:bg-slate-700 border-primary ring-1 ring-primary/30 shadow-xl z-10 relative' 
+                                                    : 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-lg'
                                             }`}
                                             onClick={() => handleProjectClick(project)}
                                             onMouseEnter={() => setHoveredProjectName(t(project.name as TranslationKey))}
@@ -150,6 +151,9 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ setPage }) => {
                                                             {t(tag as TranslationKey)}
                                                         </span>
                                                     ))}
+                                                </div>
+                                                <div className="mt-3 flex items-center text-xs font-bold text-primary dark:text-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                    {t('ViewCaseStudy')} <span className="ml-1 group-hover:translate-x-1 transition-transform">&rarr;</span>
                                                 </div>
                                             </div>
                                             <div className="self-center text-gray-300 dark:text-slate-600 group-hover:text-primary dark:group-hover:text-secondary transition-colors">

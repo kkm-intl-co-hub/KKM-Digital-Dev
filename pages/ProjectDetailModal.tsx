@@ -149,13 +149,13 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({ project, onClos
                 </Accordion>
 
                 {project.metrics && (
-                    <Accordion title="Project Metrics">
+                    <Accordion title={t('ProjectMetrics')}>
                         <ProjectMetricsChart metrics={project.metrics} />
                     </Accordion>
                 )}
 
                 {project.videoUrl && videoId && (
-                     <Accordion title="Project Video">
+                     <Accordion title={t('ProjectVideo')}>
                         {playVideo ? (
                             <div className="aspect-video rounded-lg overflow-hidden shadow-lg">
                                 <iframe
