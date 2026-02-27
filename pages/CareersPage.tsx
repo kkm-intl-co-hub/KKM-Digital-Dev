@@ -13,18 +13,18 @@ const BenefitCard: React.FC<{ icon: React.ReactNode; title: string; description:
     </div>
 );
 
-const JobListItem: React.FC<{ job: JobOpening; isExpanded: boolean; onToggle: () => void; t: (key: any) => string; }> = ({ job, isExpanded, onToggle, t }) => {
+const JobListItem: React.FC<{ job: JobOpening; isExpanded: boolean; onToggle: () => void; t: (key: TranslationKey) => string; }> = ({ job, isExpanded, onToggle, t }) => {
     return (
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md transition-shadow duration-300 hover:shadow-lg mb-4">
             <button onClick={onToggle} className="w-full p-6 text-left flex flex-col md:flex-row md:items-center justify-between gap-4" aria-expanded={isExpanded}>
                 <div>
-                    <h3 className="text-xl font-display font-bold text-primary-dark dark:text-secondary">{job.title}</h3>
+                    <h3 className="text-xl font-display font-bold text-primary-dark dark:text-secondary">{t(job.title as TranslationKey)}</h3>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-text-light dark:text-slate-400 mt-1">
-                        <span>{job.department}</span>
+                        <span>{t(job.department as TranslationKey)}</span>
                         <span>&bull;</span>
-                        <span>{job.location}</span>
+                        <span>{t(job.location as TranslationKey)}</span>
                         <span>&bull;</span>
-                        <span>{job.type}</span>
+                        <span>{t(job.type as TranslationKey)}</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 text-primary-dark dark:text-secondary font-semibold flex-shrink-0">
@@ -44,14 +44,14 @@ const JobListItem: React.FC<{ job: JobOpening; isExpanded: boolean; onToggle: ()
                         className="overflow-hidden"
                     >
                         <div className="px-6 pb-6 border-t dark:border-slate-700 pt-4">
-                            <p className="text-text-light dark:text-slate-300 mb-6">{job.description}</p>
+                            <p className="text-text-light dark:text-slate-300 mb-6">{t(job.description as TranslationKey)}</p>
                             <h4 className="text-lg font-display font-semibold text-text-dark dark:text-white mb-2">{t('Responsibilities')}</h4>
                             <ul className="list-disc list-inside space-y-2 mb-6 text-text-light dark:text-slate-300">
-                                {job.responsibilities.map((item, index) => <li key={index}>{item}</li>)}
+                                {job.responsibilities.map((item, index) => <li key={index}>{t(item as TranslationKey)}</li>)}
                             </ul>
                             <h4 className="text-lg font-display font-semibold text-text-dark dark:text-white mb-2">{t('Qualifications')}</h4>
                             <ul className="list-disc list-inside space-y-2 mb-6 text-text-light dark:text-slate-300">
-                                {job.qualifications.map((item, index) => <li key={index}>{item}</li>)}
+                                {job.qualifications.map((item, index) => <li key={index}>{t(item as TranslationKey)}</li>)}
                             </ul>
                             <button className="px-6 py-2 font-bold text-white bg-primary rounded-full hover:bg-secondary transition-colors duration-300">
                                 {t('ApplyNow')}
@@ -158,13 +158,13 @@ const CareersPage: React.FC = () => {
                             <div>
                                 <label htmlFor="department-filter" className="block text-sm font-medium text-text-light dark:text-slate-300">{t('FilterByDepartment')}</label>
                                 <select id="department-filter" value={departmentFilter} onChange={e => setDepartmentFilter(e.target.value)} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-secondary focus:border-secondary sm:text-sm rounded-md">
-                                    {departments.map(d => <option key={d} value={d}>{d === 'All' ? t('AllDepartments') : d}</option>)}
+                                    {departments.map(d => <option key={d} value={d}>{d === 'All' ? t('AllDepartments') : t(d as TranslationKey)}</option>)}
                                 </select>
                             </div>
                              <div>
                                 <label htmlFor="location-filter" className="block text-sm font-medium text-text-light dark:text-slate-300">{t('FilterByLocation')}</label>
                                 <select id="location-filter" value={locationFilter} onChange={e => setLocationFilter(e.target.value)} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-slate-200 focus:outline-none focus:ring-secondary focus:border-secondary sm:text-sm rounded-md">
-                                    {locations.map(l => <option key={l} value={l}>{l === 'All' ? t('AllLocations') : l}</option>)}
+                                    {locations.map(l => <option key={l} value={l}>{l === 'All' ? t('AllLocations') : t(l as TranslationKey)}</option>)}
                                 </select>
                             </div>
                         </div>
@@ -242,11 +242,11 @@ const CareersPage: React.FC = () => {
                         <div key={testimonial.name} className="bg-white dark:bg-slate-800 p-8 rounded-lg shadow-lg text-center">
                             <img src={testimonial.image} alt={testimonial.name} className="w-24 h-24 rounded-full mx-auto mb-4 object-cover ring-4 ring-secondary"/>
                             <blockquote className="italic text-text-light dark:text-slate-300 before:content-['“'] after:content-['”']">
-                                {testimonial.quote}
+                                {t(testimonial.quote as TranslationKey)}
                             </blockquote>
                             <cite className="block mt-4 not-italic">
                                 <span className="font-bold text-primary-dark dark:text-white">{testimonial.name}</span>,
-                                <span className="text-text-light dark:text-slate-400 text-sm"> {testimonial.role}</span>
+                                <span className="text-text-light dark:text-slate-400 text-sm"> {t(testimonial.role as TranslationKey)}</span>
                             </cite>
                         </div>
                     ))}

@@ -119,7 +119,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setPage, onSearch }) => {
   const searchInputRef = React.useRef<HTMLInputElement>(null);
   const langMenuRef = React.useRef<HTMLDivElement>(null);
 
-  const { language, setLanguage, t, direction } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
@@ -206,12 +206,17 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setPage, onSearch }) => {
               const isActive = currentPage === link.name;
               // Desktop Nav Colors
               let textColor = 'text-text-dark dark:text-slate-100';
-              if (isHomeTransparent) textColor = 'text-white hover:text-gray-200';
+              if (isHomeTransparent) textColor = 'text-white hover:text-gray-200 [text-shadow:_0_1px_2px_rgb(0_0_0_/_40%)]';
               if (isActive) textColor = 'text-white';
               else if (!isHomeTransparent) textColor += ' hover:text-primary-dark';
 
               return (
-                <button key={link.name} onClick={() => setPage(link.name)} className={`relative px-3 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-all duration-200 z-10 ${textColor}`}>
+                <button 
+                  key={link.name} 
+                  onClick={() => setPage(link.name)} 
+                  className={`relative px-3 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-all duration-200 z-10 focus-visible:ring-2 focus-visible:ring-accent-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-primary outline-none ${textColor}`}
+                  aria-current={isActive ? 'page' : undefined}
+                >
                   {isActive && <motion.div layoutId="navbar-active" className="absolute inset-0 bg-primary-dark shadow-lg rounded-md -z-10" />}
                   <span>{t(link.name)}</span>
                 </button>
@@ -220,16 +225,33 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setPage, onSearch }) => {
           </nav>
           
           <div className="flex items-center space-x-2 md:space-x-3 z-50">
-            <motion.button onClick={() => setIsSearchOpen(!isSearchOpen)} className={`${controlButtonClass} ${isSearchOpen ? 'bg-gray-100 dark:bg-slate-800 !text-text-dark dark:!text-white' : ''}`} aria-label={t('AriaLabel_SearchToggle')} whileTap={{ scale: 0.9 }}>
+            <motion.button 
+              onClick={() => setIsSearchOpen(!isSearchOpen)} 
+              className={`${controlButtonClass} ${isSearchOpen ? 'bg-gray-100 dark:bg-slate-800 !text-text-dark dark:!text-white' : ''} focus-visible:ring-2 focus-visible:ring-accent-yellow outline-none`} 
+              aria-label={t('AriaLabel_SearchToggle')} 
+              aria-expanded={isSearchOpen}
+              aria-controls="search-panel"
+              whileTap={{ scale: 0.9 }}
+            >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </motion.button>
             
-            <button onClick={toggleTheme} className={controlButtonClass} aria-label={t('AriaLabel_ThemeToggle')}>
+            <button 
+              onClick={toggleTheme} 
+              className={`${controlButtonClass} focus-visible:ring-2 focus-visible:ring-accent-yellow outline-none`} 
+              aria-label={t('AriaLabel_ThemeToggle')}
+            >
               {theme === 'light' ? <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg> : <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
             </button>
             
             <div className="relative" ref={langMenuRef}>
-                <button onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} className={`p-1.5 md:p-2 rounded-full transition-colors flex items-center gap-2 border border-transparent ${isHomeTransparent ? 'hover:bg-white/20 text-white' : 'hover:bg-gray-200 dark:hover:bg-slate-700 text-primary-dark dark:text-secondary'} ${isLangMenuOpen ? 'bg-primary/10 border-primary/20' : ''}`} aria-label={t('AriaLabel_LanguageSelector')}>
+                <button 
+                  onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} 
+                  className={`p-1.5 md:p-2 rounded-full transition-colors flex items-center gap-2 border border-transparent focus-visible:ring-2 focus-visible:ring-accent-yellow outline-none ${isHomeTransparent ? 'hover:bg-white/20 text-white' : 'hover:bg-gray-200 dark:hover:bg-slate-700 text-primary-dark dark:text-secondary'} ${isLangMenuOpen ? 'bg-primary/10 border-primary/20' : ''}`} 
+                  aria-label={t('AriaLabel_LanguageSelector')}
+                  aria-expanded={isLangMenuOpen}
+                  aria-haspopup="true"
+                >
                     <FlagIcon lang={language} className="w-5 h-5 md:w-6 md:h-6 shadow-md rounded-sm overflow-hidden" />
                     <span className="hidden md:inline text-xs font-black uppercase tracking-widest">{langNames[language]}</span>
                     <span className="md:hidden text-[10px] font-bold">{language}</span>
@@ -253,7 +275,13 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setPage, onSearch }) => {
             </div>
 
             <div className="xl:hidden">
-              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className={controlButtonClass} aria-label={t('AriaLabel_MobileMenu')}>
+              <button 
+                onClick={() => setIsMenuOpen(!isMenuOpen)} 
+                className={`${controlButtonClass} focus-visible:ring-2 focus-visible:ring-accent-yellow outline-none`} 
+                aria-label={t('AriaLabel_MobileMenu')}
+                aria-expanded={isMenuOpen}
+                aria-controls="mobile-menu"
+              >
                 {isMenuOpen ? <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg> : <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>}
               </button>
             </div>
@@ -262,7 +290,13 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setPage, onSearch }) => {
         
         <AnimatePresence>
           {isSearchOpen && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800">
+            <motion.div 
+              id="search-panel"
+              initial={{ height: 0, opacity: 0 }} 
+              animate={{ height: 'auto', opacity: 1 }} 
+              exit={{ height: 0, opacity: 0 }} 
+              className="overflow-hidden bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800"
+            >
               <form onSubmit={handleSearchSubmit} className="pb-6 pt-2">
                 <div className="relative group">
                   <input ref={searchInputRef} type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t('SearchPlaceholder')} className="w-full pl-6 pr-24 py-3 bg-gray-50 dark:bg-slate-800 border-2 border-transparent focus:border-primary/30 rounded-2xl outline-none text-text-dark dark:text-slate-200 shadow-inner transition-all" />
@@ -279,6 +313,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setPage, onSearch }) => {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div 
+            id="mobile-menu"
             initial="closed"
             animate="open"
             exit="closed"
@@ -286,6 +321,9 @@ const Header: React.FC<HeaderProps> = ({ currentPage, setPage, onSearch }) => {
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="xl:hidden fixed inset-0 z-40 bg-white dark:bg-slate-900 overflow-y-auto h-[100dvh]"
             style={{ paddingTop: '96px' }} // Fixed padding to clear header
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('AriaLabel_MobileMenu')}
           >
             <div className="px-6 pb-24 space-y-4">
               {NAV_LINKS.map(link => (

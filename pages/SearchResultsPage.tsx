@@ -23,7 +23,7 @@ const LoadingIndicator = () => (
 const getHostname = (url: string) => {
   try {
       return new URL(url).hostname;
-  } catch (e) {
+  } catch {
       return '';
   }
 };

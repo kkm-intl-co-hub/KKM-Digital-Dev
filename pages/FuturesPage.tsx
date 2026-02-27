@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useLanguage } from '../LanguageContext';
 import type { TranslationKey } from '../translations';
 import PageHeader from '../components/PageHeader';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const NotifyModal: React.FC<{onClose: () => void; t: (key: TranslationKey) => string;}> = ({ onClose, t }) => {
     const [email, setEmail] = React.useState('');
@@ -143,7 +143,7 @@ const FuturesPage: React.FC = () => {
     const [isNotifyModalOpen, setIsNotifyModalOpen] = React.useState(false);
     const [activeSection, setActiveSection] = React.useState('vision');
 
-    const sectionIds = ['vision', 'sustainability', 'roadmap', 'innovation', 'emerging-tech', 'pipeline'];
+    const sectionIds = React.useMemo(() => ['vision', 'sustainability', 'roadmap', 'innovation', 'emerging-tech', 'pipeline'], []);
 
     React.useEffect(() => {
         const observer = new IntersectionObserver(
@@ -168,7 +168,7 @@ const FuturesPage: React.FC = () => {
                 if (el) observer.unobserve(el);
             });
         };
-    }, []);
+    }, [sectionIds]);
 
     return (
         <div>

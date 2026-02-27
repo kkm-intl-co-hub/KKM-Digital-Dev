@@ -78,21 +78,21 @@ const ContactPage: React.FC = () => {
         },
     ], [t]);
     
+    const generateCaptcha = React.useCallback(() => {
+        setCaptcha({
+            a: Math.floor(Math.random() * 10) + 1,
+            b: Math.floor(Math.random() * 10) + 1,
+            answer: ''
+        });
+    }, []);
+
     React.useEffect(() => {
         // Set the head office as the default active location on load
         if (officeLocations.length > 0) {
             setActiveLocation(officeLocations[0]);
         }
         generateCaptcha();
-    }, [officeLocations]);
-
-    const generateCaptcha = () => {
-        setCaptcha({
-            a: Math.floor(Math.random() * 10) + 1,
-            b: Math.floor(Math.random() * 10) + 1,
-            answer: ''
-        });
-    };
+    }, [officeLocations, generateCaptcha]);
 
     const validateField = (name: string, value: string): string => {
         const trimmed = value.trim();

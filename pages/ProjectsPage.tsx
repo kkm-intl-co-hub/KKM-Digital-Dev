@@ -163,7 +163,7 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ setPage }) => {
                             </motion.div>
                             {filteredProjects.length === 0 && (
                                 <div className="text-center py-10 text-text-light dark:text-slate-400">
-                                    No projects match the selected filter.
+                                    {t('NoProjectsMatchFilter')}
                                 </div>
                             )}
                         </div>
@@ -185,7 +185,7 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ setPage }) => {
                             <div className="absolute top-4 left-4 z-10 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm p-3 rounded-lg shadow-lg max-w-xs border border-gray-200 dark:border-slate-600 pointer-events-none">
                                 <h4 className="text-xs font-bold uppercase tracking-wider text-text-light dark:text-slate-400 mb-1">{t('OurGlobalFootprint')}</h4>
                                 <p className="text-sm font-bold text-primary-dark dark:text-white">
-                                    {filteredProjects.length} Active Locations
+                                    {filteredProjects.length} {t('ActiveLocations')}
                                 </p>
                             </div>
                         </div>

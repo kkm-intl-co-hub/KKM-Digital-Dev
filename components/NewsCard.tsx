@@ -1,6 +1,7 @@
 import * as React from 'react';
 import type { NewsItem } from '../types';
 import { useLanguage } from '../LanguageContext';
+import type { TranslationKey } from '../translations';
 
 interface NewsCardProps {
     item: NewsItem;
@@ -13,8 +14,8 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelectArticle, imageHeight 
     const { t } = useLanguage();
     
     // If item content comes in as a translation key (no spaces), try to translate it, otherwise use as is
-    const displayTitle = item.title.includes(' ') ? item.title : t(item.title as any);
-    const displayExcerpt = item.excerpt.includes(' ') ? item.excerpt : t(item.excerpt as any);
+    const displayTitle = item.title.includes(' ') ? item.title : t(item.title as TranslationKey);
+    const displayExcerpt = item.excerpt.includes(' ') ? item.excerpt : t(item.excerpt as TranslationKey);
 
     return (
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg overflow-hidden flex flex-col group transform hover:-translate-y-1 transition-all duration-300">

@@ -60,7 +60,7 @@ interface AboutUsPageProps {
     setPage: (page: Page) => void;
 }
 
-const LeadershipCard: React.FC<{ member: OrgMember; t: any }> = ({ member, t }) => (
+const LeadershipCard: React.FC<{ member: OrgMember; t: (key: TranslationKey) => string }> = ({ member, t }) => (
     <div className="bg-white dark:bg-slate-700/50 rounded-xl overflow-hidden shadow-lg border border-gray-100 dark:border-slate-600 group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col">
         <div className="h-2 bg-gradient-to-r from-primary to-secondary"></div>
         <div className="p-6 text-center flex-grow flex flex-col">
@@ -79,7 +79,7 @@ const LeadershipCard: React.FC<{ member: OrgMember; t: any }> = ({ member, t }) 
     </div>
 );
 
-const CompactLeadershipCard: React.FC<{ member: OrgMember; t: any }> = ({ member, t }) => {
+const CompactLeadershipCard: React.FC<{ member: OrgMember; t: (key: TranslationKey) => string }> = ({ member, t }) => {
     const [isExpanded, setIsExpanded] = React.useState(false);
 
     return (
@@ -128,6 +128,10 @@ const CompactLeadershipCard: React.FC<{ member: OrgMember; t: any }> = ({ member
     );
 };
 
+const NavLink: React.FC<{id: string, titleKey: TranslationKey, activeSection: string, t: (key: TranslationKey) => string}> = ({id, titleKey, activeSection, t}) => (
+    <a href={`#${id}`} className={`font-semibold transition-colors ${activeSection === id ? 'text-primary dark:text-secondary font-bold' : 'text-text-light dark:text-slate-300 hover:text-primary dark:hover:text-secondary'}`}>{t(titleKey)}</a>
+);
+
 const AboutUsPage: React.FC<AboutUsPageProps> = ({ setPage }) => {
   const { t } = useLanguage();
   const [currentTestimonial, setCurrentTestimonial] = React.useState(0);
@@ -141,7 +145,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({ setPage }) => {
     return () => clearTimeout(timer);
   }, [currentTestimonial]);
   
-  const sectionIds = ['overview', 'funding', 'history', 'governance', 'roles', 'sustainability', 'testimonials', 'awards'];
+  const sectionIds = React.useMemo(() => ['overview', 'funding', 'history', 'governance', 'roles', 'sustainability', 'testimonials', 'awards'], []);
 
   React.useEffect(() => {
     const observer = new IntersectionObserver(
@@ -169,11 +173,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({ setPage }) => {
             if (el) observer.unobserve(el);
         });
     };
-}, []);
-
-  const NavLink: React.FC<{id: string, titleKey: TranslationKey}> = ({id, titleKey}) => (
-       <a href={`#${id}`} className={`font-semibold transition-colors ${activeSection === id ? 'text-primary dark:text-secondary font-bold' : 'text-text-light dark:text-slate-300 hover:text-primary dark:hover:text-secondary'}`}>{t(titleKey)}</a>
-  );
+}, [sectionIds]);
 
   const fundingData = [
       { label: t('VentureCapital'), value: 40, color: '#FFC107', description: t('VentureCapitalDesc') },
@@ -187,14 +187,14 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({ setPage }) => {
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 -mt-8 mb-12 sticky top-20 z-10">
             <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm shadow-md rounded-lg p-4 flex flex-wrap justify-center gap-3 sm:gap-6">
-                <NavLink id="overview" titleKey="CompanyOverview" />
-                <NavLink id="funding" titleKey="FundingInvestment" />
-                <NavLink id="history" titleKey="OurHistory" />
-                <NavLink id="governance" titleKey="LeadershipGovernance" />
-                <NavLink id="roles" titleKey="StrategicRoles" />
-                <NavLink id="sustainability" titleKey="SustainabilityCommitments" />
-                <NavLink id="testimonials" titleKey="ClientTestimonials" />
-                <NavLink id="awards" titleKey="AwardsRecognition" />
+                <NavLink id="overview" titleKey="CompanyOverview" activeSection={activeSection} t={t} />
+                <NavLink id="funding" titleKey="FundingInvestment" activeSection={activeSection} t={t} />
+                <NavLink id="history" titleKey="OurHistory" activeSection={activeSection} t={t} />
+                <NavLink id="governance" titleKey="LeadershipGovernance" activeSection={activeSection} t={t} />
+                <NavLink id="roles" titleKey="StrategicRoles" activeSection={activeSection} t={t} />
+                <NavLink id="sustainability" titleKey="SustainabilityCommitments" activeSection={activeSection} t={t} />
+                <NavLink id="testimonials" titleKey="ClientTestimonials" activeSection={activeSection} t={t} />
+                <NavLink id="awards" titleKey="AwardsRecognition" activeSection={activeSection} t={t} />
             </div>
         </div>
         
@@ -296,9 +296,18 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({ setPage }) => {
             <p className="mb-10 max-w-4xl mx-auto text-lg text-text-light dark:text-slate-300">{t('LeadershipGovernanceText')}</p>
             
             <h3 className="text-2xl font-display font-bold text-text-dark dark:text-white mb-8 text-center">{t('ExecutiveLeadership')}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            
+            {/* Desktop Grid */}
+            <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
                 {executiveLeadership.map(member => (
                     <LeadershipCard key={member.name} member={member} t={t} />
+                ))}
+            </div>
+
+            {/* Mobile/Tablet Compact List */}
+            <div className="grid md:hidden grid-cols-1 gap-4 mb-16">
+                {executiveLeadership.map(member => (
+                    <CompactLeadershipCard key={member.name} member={member} t={t} />
                 ))}
             </div>
 

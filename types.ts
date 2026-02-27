@@ -66,7 +66,7 @@ export interface GroundingChunk {
     uri?: string;
     title?: string;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface GeminiSearchResult {

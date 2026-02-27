@@ -17,6 +17,7 @@ const HomePage = React.lazy(() => import('./pages/HomePage'));
 const AboutUsPage = React.lazy(() => import('./pages/AboutUsPage'));
 const CoreTechnologiesPage = React.lazy(() => import('./pages/CoreTechnologiesPage'));
 const ProjectsPage = React.lazy(() => import('./pages/ProjectsPage'));
+const FuturesPage = React.lazy(() => import('./pages/FuturesPage'));
 const InnovationHubPage = React.lazy(() => import('./pages/InnovationHubPage'));
 const ContactPage = React.lazy(() => import('./pages/ContactPage'));
 const ComingSoonPage = React.lazy(() => import('./pages/ComingSoonPage'));
@@ -24,7 +25,6 @@ const LegalPage = React.lazy(() => import('./pages/LegalPage'));
 const NewsPage = React.lazy(() => import('./pages/NewsPage'));
 const NewsArticlePage = React.lazy(() => import('./pages/NewsArticlePage'));
 const SearchResultsPage = React.lazy(() => import('./pages/SearchResultsPage'));
-const FuturesPage = React.lazy(() => import('./pages/FuturesPage'));
 const CareersPage = React.lazy(() => import('./pages/CareersPage'));
 const InternalPortalPage = React.lazy(() => import('./pages/InternalPortalPage'));
 
@@ -40,11 +40,11 @@ interface PageErrorBoundaryState {
 class PageErrorBoundary extends React.Component<PageErrorBoundaryProps, PageErrorBoundaryState> {
   public state: PageErrorBoundaryState = { hasError: false };
 
-  static getDerivedStateFromError(error: any) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 
-  componentDidCatch(error: any, errorInfo: any) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("Page Loading Error:", error, errorInfo);
   }
 
@@ -67,7 +67,7 @@ class PageErrorBoundary extends React.Component<PageErrorBoundaryProps, PageErro
       );
     }
 
-    return (this as any).props.children;
+    return this.props.children;
   }
 }
 
@@ -83,14 +83,14 @@ const App: React.FC = () => {
   const [selectedArticle, setSelectedArticle] = React.useState<NewsItem | null>(null);
   const [searchResults, setSearchResults] = React.useState<GeminiSearchResult | null>(null);
   const [searchQuery, setSearchQuery] = React.useState('');
-  const { direction, language, t } = useLanguage();
+  const { t } = useLanguage();
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
   }, [currentPage, selectedArticle]);
 
   // Determine SEO Properties based on state
-  let title = 'KKM International Group';
+  let title: string;
   let description = 'Engineering a Sustainable Future.';
 
   if (currentPage === Page.News && selectedArticle) {
@@ -190,8 +190,9 @@ const App: React.FC = () => {
                         tools: [{ googleSearch: {} }],
                     },
                 });
-            } catch (searchError: any) {
-                 console.warn("Google Search grounding failed or quota exceeded, falling back to standard generation.", searchError);
+            } catch (searchError) {
+                 const err = searchError as { message?: string };
+                 console.warn("Google Search grounding failed or quota exceeded, falling back to standard generation.", err);
                  response = await ai.models.generateContent({
                     model: 'gemini-2.5-flash',
                     contents: prompt + "\n\n(Note: Real-time web search is currently unavailable. Please answer based on your general knowledge base.)",
@@ -204,9 +205,10 @@ const App: React.FC = () => {
             setSearchResults({ summary, sources, sourceType: 'web' });
         }
 
-    } catch (error: any) {
+    } catch (error) {
+        const err = error as { message?: string; status?: number };
         // Detect Quota errors
-        const isQuotaError = error.message?.includes('429') || error.status === 429 || error.message?.includes('quota') || error.message?.includes('RESOURCE_EXHAUSTED');
+        const isQuotaError = err.message?.includes('429') || err.status === 429 || err.message?.includes('quota') || err.message?.includes('RESOURCE_EXHAUSTED');
         
         if (isQuotaError) {
              console.warn("Search failed due to API quota exhaustion.");
@@ -250,6 +252,9 @@ const App: React.FC = () => {
         break;
       case Page.Projects:
         pageComponent = <ProjectsPage setPage={setCurrentPage} />;
+        break;
+      case Page.Futures:
+        pageComponent = <FuturesPage />;
         break;
       case Page.InnovationHub:
         pageComponent = <InnovationHubPage />;
@@ -306,7 +311,7 @@ const App: React.FC = () => {
           {renderPage()}
         </AnimatePresence>
       </main>
-      <Footer setPage={setCurrentPage} />
+      <Footer setPage={setCurrentPage} currentPage={currentPage} />
       <BackToTopButton />
     </div>
   );

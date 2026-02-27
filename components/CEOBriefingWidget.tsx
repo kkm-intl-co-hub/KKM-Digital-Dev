@@ -8,7 +8,6 @@ const CEOBriefingWidget: React.FC = () => {
     const [headlines, setHeadlines] = React.useState<string[]>([]);
     const [currentIndex, setCurrentIndex] = React.useState(0);
     const [isLoading, setIsLoading] = React.useState(true);
-    const [error, setError] = React.useState<string | null>(null);
     const { t } = useLanguage();
 
     // Auto-rotate headlines
@@ -58,7 +57,7 @@ const CEOBriefingWidget: React.FC = () => {
                     const text = response.text || '';
                     // Parse bullet points into an array
                     const items = text.split('\n')
-                        .map(line => line.replace(/^[\*\-\•]\s*/, '').trim())
+                        .map(line => line.replace(/^[*•-]\s*/, '').trim())
                         .filter(line => line.length > 0);
 
                     if (items.length > 0) {
@@ -67,9 +66,10 @@ const CEOBriefingWidget: React.FC = () => {
                         throw new Error("Empty response from AI");
                     }
                 }
-            } catch (err: any) {
+            } catch (err) {
                 // Graceful handling for Quota Exceeded (429) or other API errors
-                const isQuotaError = err.message?.includes('429') || err.status === 429 || err.message?.includes('quota') || err.message?.includes('RESOURCE_EXHAUSTED');
+                const errorObj = err as { message?: string; status?: number };
+                const isQuotaError = errorObj.message?.includes('429') || errorObj.status === 429 || errorObj.message?.includes('quota') || errorObj.message?.includes('RESOURCE_EXHAUSTED');
                 
                 if (isQuotaError) {
                     console.warn("Gemini API Quota Exceeded for CEO Briefing. Switching to fallback content.");

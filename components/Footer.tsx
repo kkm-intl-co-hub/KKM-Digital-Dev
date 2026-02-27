@@ -64,15 +64,20 @@ const FooterLink: React.FC<{
     setPage: (page: Page) => void;
     t: (key: TranslationKey, options?: { [key: string]: string | number }) => string;
     children?: React.ReactNode;
-}> = ({ page, setPage, t, children }) => (
+    isActive?: boolean;
+}> = ({ page, setPage, t, children, isActive }) => (
     <li>
-        <button onClick={() => setPage(page)} className="text-gray-200 hover:text-white transition-colors duration-200 text-left">
+        <button 
+            onClick={() => setPage(page)} 
+            className={`text-gray-200 hover:text-white transition-colors duration-200 text-left focus-visible:ring-2 focus-visible:ring-accent-yellow outline-none rounded px-1 -mx-1 ${isActive ? 'text-white font-bold' : ''}`}
+            aria-current={isActive ? 'page' : undefined}
+        >
             {children || t(page as TranslationKey)}
         </button>
     </li>
 );
 
-const Footer: React.FC<FooterProps> = ({ setPage }) => {
+const Footer: React.FC<FooterProps & { currentPage?: Page }> = ({ setPage, currentPage }) => {
     const { t } = useLanguage();
     const [email, setEmail] = React.useState('');
     const [subscriptionState, setSubscriptionState] = React.useState<'idle' | 'loading' | 'success'>('idle');
@@ -152,7 +157,7 @@ const Footer: React.FC<FooterProps> = ({ setPage }) => {
                                     target="_blank" 
                                     rel="noopener noreferrer" 
                                     aria-label={link.name} 
-                                    className="text-gray-300 hover:text-primary transition-all duration-300 transform hover:scale-110"
+                                    className="text-gray-300 hover:text-primary transition-all duration-300 transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-accent-yellow outline-none rounded-full p-1"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
                                         <path d={link.path}/>
@@ -163,52 +168,53 @@ const Footer: React.FC<FooterProps> = ({ setPage }) => {
                     </div>
 
                     {/* Quick Links */}
-                    <div>
+                    <nav aria-label={t('QuickLinks')}>
                         <h3 className="font-display font-semibold tracking-wider uppercase border-b border-gray-700 pb-2 mb-4">{t('QuickLinks')}</h3>
                         <ul className="space-y-2">
-                           {quickLinks.map(page => <FooterLink key={page} page={page} setPage={setPage} t={t} />)}
+                           {quickLinks.map(page => <FooterLink key={page} page={page} setPage={setPage} t={t} isActive={currentPage === page} />)}
                         </ul>
-                    </div>
+                    </nav>
 
                     {/* Engagement */}
-                    <div>
+                    <nav aria-label={t('Engagement')}>
                         <h3 className="font-display font-semibold tracking-wider uppercase border-b border-gray-700 pb-2 mb-4">{t('Engagement')}</h3>
                         <ul className="space-y-2">
-                           {engagementLinks.map(page => <FooterLink key={page} page={page} setPage={setPage} t={t} />)}
+                           {engagementLinks.map(page => <FooterLink key={page} page={page} setPage={setPage} t={t} isActive={currentPage === page} />)}
                         </ul>
-                    </div>
+                    </nav>
 
                     {/* Contact & Newsletter */}
                     <div>
                          <h3 className="font-display font-semibold tracking-wider uppercase border-b border-gray-700 pb-2 mb-4">{t('ConnectWithUs')}</h3>
                         <p className="text-gray-300 text-sm font-semibold">{t('HeadOffice')}</p>
                         <p className="mt-1 text-gray-300 text-sm">{t('TehranOfficeAddress')}</p>
-                        <p className="mt-1 text-gray-300 text-sm"><a href={`tel:${t('CompanyPhone').replace(/\s/g, '')}`} className="hover:text-white transition-colors">{t('CompanyPhone')}</a></p>
-                        <p className="mt-1 text-gray-300 text-sm"><span className="opacity-70">{t('IVRLabel')}: </span><a href={`tel:${t('IVRPhone').replace(/\s/g, '')}`} className="hover:text-white transition-colors">{t('IVRPhone')}</a></p>
-                        <p className="mt-2 text-gray-300 text-sm"><a href="mailto:info@kkm-intl.org" className="hover:text-white transition-colors">info@kkm-intl.org</a></p>
+                        <p className="mt-1 text-gray-300 text-sm"><a href={`tel:${t('CompanyPhone').replace(/\s/g, '')}`} className="hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-accent-yellow outline-none rounded px-1 -mx-1">{t('CompanyPhone')}</a></p>
+                        <p className="mt-1 text-gray-300 text-sm"><span className="opacity-70">{t('IVRLabel')}: </span><a href={`tel:${t('IVRPhone').replace(/\s/g, '')}`} className="hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-accent-yellow outline-none rounded px-1 -mx-1">{t('IVRPhone')}</a></p>
+                        <p className="mt-2 text-gray-300 text-sm"><a href="mailto:info@kkm-intl.org" className="hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-accent-yellow outline-none rounded px-1 -mx-1">info@kkm-intl.org</a></p>
                         
                         <div className="mt-6 pt-6 border-t border-gray-700">
-                            <h4 className="text-sm font-semibold mb-3">Newsletter</h4>
+                            <h4 className="text-sm font-semibold mb-3">{t('Newsletter')}</h4>
                             <form onSubmit={handleSubscribe} className="flex flex-col gap-2">
                                 <div className="relative">
-                                    <label htmlFor="newsletter-email" className="sr-only">Email address for newsletter</label>
+                                    <label htmlFor="newsletter-email" className="sr-only">{t('NewsletterPlaceholder')}</label>
                                     <input 
                                         id="newsletter-email"
                                         type="email" 
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="Your email address"
+                                        placeholder={t('NewsletterPlaceholder')}
                                         className="w-full bg-gray-800 border border-gray-500 rounded px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors"
                                         required
                                         aria-required="true"
-                                        aria-label="Email address for newsletter subscription"
+                                        aria-label={t('NewsletterPlaceholder')}
                                         disabled={subscriptionState !== 'idle'}
                                     />
                                 </div>
                                 <button 
                                     type="submit" 
                                     disabled={subscriptionState !== 'idle'}
-                                    className={`w-full py-2 px-4 rounded text-sm font-bold transition-all duration-300 flex items-center justify-center ${subscriptionState === 'success' ? 'bg-green-600 text-white' : 'bg-primary hover:bg-secondary text-white'}`}
+                                    className={`w-full py-2 px-4 rounded text-sm font-bold transition-all duration-300 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-accent-yellow outline-none ${subscriptionState === 'success' ? 'bg-green-600 text-white' : 'bg-primary hover:bg-secondary text-white'}`}
+                                    aria-live="polite"
                                 >
                                     {subscriptionState === 'loading' ? (
                                         <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -216,9 +222,9 @@ const Footer: React.FC<FooterProps> = ({ setPage }) => {
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
                                     ) : subscriptionState === 'success' ? (
-                                        'Subscribed!'
+                                        t('Subscribed')
                                     ) : (
-                                        'Subscribe'
+                                        t('Subscribe')
                                     )}
                                 </button>
                             </form>
@@ -226,7 +232,7 @@ const Footer: React.FC<FooterProps> = ({ setPage }) => {
                                 onClick={() => setPage(Page.Contact)}
                                 className="mt-3 text-xs text-gray-400 hover:text-white underline transition-colors w-full text-center block"
                             >
-                                Or contact us directly
+                                {t('OrContactUsDirectly')}
                             </button>
                         </div>
                     </div>
@@ -236,8 +242,8 @@ const Footer: React.FC<FooterProps> = ({ setPage }) => {
                 <div className="mt-12 border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-gray-400 text-sm text-center md:text-left">&copy; {new Date().getFullYear()} KKM International Group. {t('AllRightsReserved')}</p>
                     <div className="flex space-x-6">
-                         <button onClick={() => setPage(Page.Legal)} className="text-gray-300 hover:text-white text-sm transition-colors">{t('PrivacyPolicy')}</button>
-                         <button onClick={() => setPage(Page.Legal)} className="text-gray-300 hover:text-white text-sm transition-colors">{t('TermsOfUse')}</button>
+                         <button onClick={() => setPage(Page.Legal)} className="text-gray-300 hover:text-white text-sm transition-colors focus-visible:ring-2 focus-visible:ring-accent-yellow outline-none rounded px-1">{t('PrivacyPolicy')}</button>
+                         <button onClick={() => setPage(Page.Legal)} className="text-gray-300 hover:text-white text-sm transition-colors focus-visible:ring-2 focus-visible:ring-accent-yellow outline-none rounded px-1">{t('TermsOfUse')}</button>
                     </div>
                 </div>
             </div>

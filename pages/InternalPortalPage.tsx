@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useLanguage } from '../LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Page } from '../types';
 
 // Types
 type UserRole = 'Admin' | 'Manager' | 'Employee' | 'Reviewer' | 'Contributor' | 'Guest';
@@ -129,8 +128,8 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, userDatabase, onUpdateUs
                 onLogin(foundUser);
             }
 
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            setError((err as Error).message);
             setLoading(false);
         }
     };
@@ -171,7 +170,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, userDatabase, onUpdateUs
                 onLogin(updatedUser);
             }, 500);
 
-        } catch (err) {
+        } catch {
             setError("Failed to update password.");
             setLoading(false);
         }
@@ -585,6 +584,16 @@ const OverviewView: React.FC = () => {
 }
 
 // --- MAIN PORTAL PAGE (Container) ---
+const NavItem: React.FC<{ view: string; label: string; icon: React.ReactNode; currentView: string; onClick: () => void }> = ({ view, label, icon, currentView, onClick }) => (
+    <button
+        onClick={onClick}
+        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${currentView === view ? 'bg-primary text-white shadow-md' : 'text-text-light dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'}`}
+    >
+        {icon}
+        <span className="font-medium">{label}</span>
+    </button>
+);
+
 const InternalPortalPage: React.FC = () => {
     const { t } = useLanguage();
     const [auth, setAuth] = React.useState<AuthState>({ isAuthenticated: false, user: null, error: null });
@@ -683,16 +692,6 @@ const InternalPortalPage: React.FC = () => {
 
     const isAdmin = auth.user.role === 'Admin';
 
-    const NavItem: React.FC<{ view: typeof currentView; label: string; icon: React.ReactNode }> = ({ view, label, icon }) => (
-        <button
-            onClick={() => { setCurrentView(view); setIsSidebarOpen(false); }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${currentView === view ? 'bg-primary text-white shadow-md' : 'text-text-light dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'}`}
-        >
-            {icon}
-            <span className="font-medium">{label}</span>
-        </button>
-    );
-
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex">
             {/* Sidebar Mobile Overlay */}
@@ -712,11 +711,15 @@ const InternalPortalPage: React.FC = () => {
                     <NavItem 
                         view="Dashboard" 
                         label={t('Nav_Dashboard')} 
+                        currentView={currentView}
+                        onClick={() => { setCurrentView('Dashboard'); setIsSidebarOpen(false); }}
                         icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>}
                     />
                     <NavItem 
                         view="Automation" 
                         label={t('Nav_Automation')} 
+                        currentView={currentView}
+                        onClick={() => { setCurrentView('Automation'); setIsSidebarOpen(false); }}
                         icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
                     />
 
@@ -726,6 +729,8 @@ const InternalPortalPage: React.FC = () => {
                         <NavItem 
                             view="UserManagement" 
                             label={t('Nav_UserMgmt')} 
+                            currentView={currentView}
+                            onClick={() => { setCurrentView('UserManagement'); setIsSidebarOpen(false); }}
                             icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
                         />
                         </>

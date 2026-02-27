@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { Page } from '../types';
-import type { NewsItem, Video } from '../types';
+import type { NewsItem } from '../types';
 import { GMEL_TECHNOLOGIES, PROJECTS, NEWS_ITEMS, VIDEOS } from '../constants';
 import Card from '../components/Card';
 import { useLanguage } from '../LanguageContext';

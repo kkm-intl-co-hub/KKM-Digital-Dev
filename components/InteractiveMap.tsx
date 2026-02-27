@@ -5,7 +5,7 @@ import { useLanguage } from '../LanguageContext';
 
 declare global {
     interface Window {
-        google: any;
+        google: unknown;
         __googleMapsApiCallback: (() => void) | undefined;
         gm_authFailure: (() => void) | undefined;
     }
@@ -22,7 +22,7 @@ const ICON_COLORS: { [key: string]: string } = {
     'Default': '#F85959',
 };
 
-let mapsApiPromise: Promise<any> | null = null;
+let mapsApiPromise: Promise<unknown> | null = null;
 const SCRIPT_ID = 'google-maps-api-script';
 const MAP_CALLBACK_NAME = '__googleMapsApiCallback';
 
@@ -39,19 +39,19 @@ interface MapErrorBoundaryState {
 class MapErrorBoundary extends React.Component<MapErrorBoundaryProps, MapErrorBoundaryState> {
     state: MapErrorBoundaryState = { hasError: false };
 
-    static getDerivedStateFromError(error: any): MapErrorBoundaryState {
+    static getDerivedStateFromError(): MapErrorBoundaryState {
         return { hasError: true };
     }
 
-    componentDidCatch(error: any, errorInfo: any) {
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
         console.error("Map component crashed:", error, errorInfo);
     }
 
     render() {
         if (this.state.hasError) {
-            return (this as any).props.fallback;
+            return this.props.fallback;
         }
-        return (this as any).props.children;
+        return this.props.children;
     }
 }
 
@@ -98,7 +98,7 @@ const loadMapsApi = () => {
         }
 
         const cleanup = () => {
-            // @ts-ignore
+            // @ts-expect-error - callback is dynamic
             delete window.__googleMapsApiCallback;
         };
 
@@ -135,7 +135,7 @@ const loadMapsApi = () => {
         script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=weekly&callback=${MAP_CALLBACK_NAME}&loading=async`;
         script.async = true;
         script.defer = true;
-        script.onerror = (e) => {
+        script.onerror = () => {
             script.remove();
             cleanup();
             const error = new Error(`Failed to load Google Maps script.`);
@@ -159,16 +159,16 @@ interface InteractiveMapProps {
     onMarkerHover?: (projectName: string | null) => void;
 }
 
-const InteractiveMap: React.FC<InteractiveMapProps> = ({ projects, activeProject, hoveredProjectName, mapHoveredProjectName, onMarkerSelect, onMarkerHover }) => {
+const InteractiveMap: React.FC<InteractiveMapProps> = ({ projects, activeProject, onMarkerSelect, onMarkerHover }) => {
     const mapRef = React.useRef<HTMLDivElement>(null);
     const [mapIsReady, setMapIsReady] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(true);
     const [loadError, setLoadError] = React.useState<string | null>(null);
     
-    const mapApi = React.useRef<any>(null);
-    const mapInstance = React.useRef<any>(null);
-    const markers = React.useRef<Map<string, any>>(new Map());
-    const userLocationMarker = React.useRef<any>(null);
+    const mapApi = React.useRef<unknown>(null);
+    const mapInstance = React.useRef<unknown>(null);
+    const markers = React.useRef<Map<string, unknown>>(new Map());
+    const userLocationMarker = React.useRef<unknown>(null);
     
     const locationButtonRef = React.useRef<HTMLButtonElement | null>(null);
     const locationClickListenerRef = React.useRef<(() => void) | null>(null);
@@ -273,15 +273,19 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ projects, activeProject
              setIsLoading(false);
         });
 
+        const currentMarkers = markers.current;
+        const currentInstance = mapInstance.current;
+        const currentUserLocation = userLocationMarker.current;
+
         return () => {
             isMounted = false;
             if (locationButtonRef.current && locationClickListenerRef.current) {
                 locationButtonRef.current.removeEventListener("click", locationClickListenerRef.current);
             }
-            if (mapInstance.current) {
-                markers.current.forEach(marker => marker.map = null);
-                markers.current.clear();
-                if (userLocationMarker.current) userLocationMarker.current.map = null;
+            if (currentInstance) {
+                currentMarkers.forEach(marker => marker.map = null);
+                currentMarkers.clear();
+                if (currentUserLocation) currentUserLocation.map = null;
             }
         };
     }, [t]);

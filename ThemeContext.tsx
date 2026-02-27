@@ -19,7 +19,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
         return 'dark';
       }
-    } catch (error) {
+    } catch {
         // localStorage can be disabled in some environments
     }
     return 'light';
@@ -31,7 +31,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     root.classList.add(theme);
     try {
         localStorage.setItem('theme', theme);
-    } catch (error) {
+    } catch {
         // localStorage can be disabled in some environments
     }
   }, [theme]);
@@ -49,6 +49,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = (): ThemeContextType => {
   const context = React.useContext(ThemeContext);
   if (!context) {
