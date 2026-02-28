@@ -92,12 +92,15 @@ const App: React.FC = () => {
   // Determine SEO Properties based on state
   let title: string;
   let description = 'Engineering a Sustainable Future.';
+  let keywords = 'KKM International, Sustainable Engineering, Geothermal Energy, Innovation';
 
   if (currentPage === Page.News && selectedArticle) {
      title = `${selectedArticle.title} | KKM News`;
      description = selectedArticle.excerpt;
+     keywords = `KKM News, ${selectedArticle.category}, ${selectedArticle.title.split(' ').join(', ')}`;
   } else if (currentPage === Page.SearchResults) {
      title = `Search Results: ${searchQuery} | KKM`;
+     keywords = `Search, ${searchQuery}, KKM International`;
   } else {
      const pageName = t(currentPage as TranslationKey) || currentPage;
      title = `${pageName} | KKM International Group`;
@@ -105,13 +108,26 @@ const App: React.FC = () => {
      if (currentPage === Page.Home) {
          title = "KKM International Group | Engineering a Sustainable Future";
          description = 'A corporate portal for KKM International Group, showcasing core technologies, projects, and innovations in engineering a sustainable future.';
+         keywords = 'KKM International, Sustainable Engineering, Geothermal Energy, Innovation, Corporate Portal';
      } else if (currentPage === Page.Careers) {
          description = 'Join the KKM team. Explore career opportunities and job openings in engineering, R&D, and more.';
+         keywords = 'KKM Careers, Jobs, Engineering Jobs, R&D Careers, Sustainable Energy Jobs';
      } else if (currentPage === Page.Projects) {
          description = 'Explore KKM International Group\'s pioneering projects and pilots in sustainable infrastructure and energy.';
+         keywords = 'KKM Projects, Sustainable Infrastructure, Energy Pilots, Geothermal Projects, Innovation Showcase';
      } else if (currentPage === Page.CoreTechnologies) {
          // Optimized description with keywords
          description = 'Discover the GMEL Ecosystem and our breakthrough technologies: Closed-Loop Geothermal (CLG), Green Hydrogen (H2Cell), Thermal Desalination, and AI-driven Energy Health Sensors (EHS).';
+         keywords = 'GMEL Ecosystem, Closed-Loop Geothermal, Green Hydrogen, Thermal Desalination, AI Sensors, KKM Technologies';
+     } else if (currentPage === Page.AboutUs) {
+         description = 'Learn about KKM International Group, our mission, vision, and history in pioneering sustainable engineering solutions.';
+         keywords = 'About KKM, Company History, Sustainable Engineering Mission, KKM Vision, Leadership';
+     } else if (currentPage === Page.InnovationHub) {
+         description = 'Discover KKM\'s Innovation & Ideation Hub, accelerating the future through disciplined creativity and rigorous R&D.';
+         keywords = 'Innovation Hub, R&D, KKM Innovation, Ideation, Technology Accelerator';
+     } else if (currentPage === Page.Futures) {
+         description = 'Explore KKM\'s vision for tomorrow: Planetary Healing, Energy Sovereignty, and Sentient Infrastructure.';
+         keywords = 'KKM Futures, Planetary Healing, Energy Sovereignty, Sentient Infrastructure, 2050 Roadmap';
      }
   }
 
@@ -304,7 +320,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col font-sans text-text-dark dark:text-slate-200">
-      <SEOHead title={title} description={description} />
+      <SEOHead title={title} description={description} keywords={keywords} />
       <Header currentPage={currentPage} setPage={setCurrentPage} onSearch={handleSearch} />
       <main className="flex-grow">
         <AnimatePresence mode="wait">

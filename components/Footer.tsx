@@ -69,10 +69,13 @@ const FooterLink: React.FC<{
     <li>
         <button 
             onClick={() => setPage(page)} 
-            className={`text-gray-200 hover:text-white transition-colors duration-200 text-left focus-visible:ring-2 focus-visible:ring-accent-yellow outline-none rounded px-1 -mx-1 ${isActive ? 'text-white font-bold' : ''}`}
+            className={`transition-all duration-300 text-left focus-visible:ring-2 focus-visible:ring-accent-yellow outline-none rounded px-1 -mx-1 flex items-center group ${isActive ? 'text-white font-bold translate-x-2' : 'text-gray-300 hover:text-white'}`}
             aria-current={isActive ? 'page' : undefined}
         >
-            {children || t(page as TranslationKey)}
+            {isActive && <span className="text-primary mr-2 text-xl leading-none" aria-hidden="true">&bull;</span>}
+            <span className={!isActive ? "group-hover:translate-x-2 transition-transform duration-300" : ""}>
+                {children || t(page as TranslationKey)}
+            </span>
         </button>
     </li>
 );
